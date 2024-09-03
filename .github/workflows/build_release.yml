@@ -50,7 +50,7 @@ jobs:
           ls
           $ANDROID_SDK_ROOT/build-tools/35.0.0/zipalign -v -p 4 "./app-release-unsigned.apk" "./app-release-aligned.apk"
           ls $ANDROID_SDK_ROOT/build-tools/35.0.0
-          $ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner sign --ks "./extinguish.jks" --ks-key-alias $KEY_ALIAS --ks-pass pass:$KEYSTORE_PASS --key-pass pass:$KEY_PASS --out "./app-release.apk" "./app-release-aligned.apk"
+          $ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner sign --ks "./extinguish.jks" --ks-key-alias $KEY_ALIAS --key-pass pass:$KEYSTORE_PASS --key-pass pass:$KEY_PASS --out "./app-release.apk" "./app-release-aligned.apk"
           ls
           # $ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner verify -v "./app-release.apk"
       
