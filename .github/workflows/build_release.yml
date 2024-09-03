@@ -34,8 +34,9 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          packages: 'build-tools'
+
+      - name: Add build-tools
+        run: sdkmanager "build-tools"
 
       - name: Check SDK
         run: |
