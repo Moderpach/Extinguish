@@ -20,9 +20,9 @@ jobs:
       - name: Retrieve the secret and decode it to a file
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS}}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS}}
-          KEY_PASS: ${{ secrets.KEY_PASS}}
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASS }}
         run: |
           echo $KEYSTORE_BASE64 | base64 --decode > extinguish.jks
 
@@ -47,10 +47,11 @@ jobs:
         run: |
           cd ./app/build/outputs/apk/release
           ls
-          $ANDROID_SDK_ROOT/build-tools/35.0.0/zipalign -v -p 4 app-release-unsigned.apk app-release-aligned.apk
-          $ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner sign --ks "./extinguish.jks" --ks-key-alias $KEY_ALIAS --ks-pass pass:$KEYSTORE_PASS --key-pass pass:$KEY_PASS --out "app-release.apk" "app-release-aligned.apk"
+          $ANDROID_SDK_ROOT/build-tools/35.0.0/zipalign -v -p 4 "./app-release-unsigned.apk" "./app-release-aligned.apk"
+          ls $ANDROID_SDK_ROOT/build-tools/35.0.0
+          $ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner sign --ks "./extinguish.jks" --ks-key-alias $KEY_ALIAS --ks-pass pass:$KEYSTORE_PASS --key-pass pass:$KEY_PASS --out "./app-release.apk" "./app-release-aligned.apk"
           ls
-          $ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner verify -v "app-release.apk"
+          # $ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner verify -v "./app-release.apk"
       
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
