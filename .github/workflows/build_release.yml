@@ -45,6 +45,11 @@ jobs:
           ls ./app/build/outputs/apk/release
 
       - name: Signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASS }}
         run: |
           cd ./app/build/outputs/apk/release
           ls
