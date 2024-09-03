@@ -25,6 +25,7 @@ jobs:
           KEY_PASS: ${{ secrets.KEY_PASS }}
         run: |
           echo $KEYSTORE_BASE64 | base64 --decode > extinguish.jks
+          ls
 
       - name: Setup Java
         uses: actions/setup-java@v4
