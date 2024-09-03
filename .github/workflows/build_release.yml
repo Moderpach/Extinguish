@@ -35,32 +35,22 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # - name: Add build-tools
-      #   run: sdkmanager "build-tools"
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-      - name: Check SDK
+      - name: Build Project
         run: |
-          cd $ANDROID_SDK_ROOT/
+          ./gradlew assembleRelease
+          ls ./app/build/outputs/apk/release
+
+      - name: Signing
+        run: |
+          cd ./app/build/outputs/apk/release
           ls
-          cd $ANDROID_SDK_ROOT/build-tools
+          $ANDROID_SDK_ROOT/build-tools/35.0.0/zipalign -v -p 4 app-release.apk app-release-aligned.apk
+          $ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner sign --ks "./extinguish.jks" --ks-key-alias $KEY_ALIAS --ks-pass pass:$KEYSTORE_PASS --key-pass pass:$KEY_PASS --out "app-release.apk" "app-release-aligned.apk"
           ls
-
-      # - name: Grant execute permission for gradlew
-      #   run: chmod +x gradlew
-
-      # - name: Build Project
-      #   run: |
-      #     ./gradlew assembleRelease
-      #     ls ./app/build/outputs/apk/release
-
-      # - name: Signing
-      #   run: |
-      #     cd ./app/build/outputs/apk/release
-      #     ls
-      #     zipalign -v -p 4 app-release.apk app-release-aligned.apk
-      #     apksigner sign --ks "./extinguish.jks" --ks-key-alias $KEY_ALIAS --ks-pass pass:$KEYSTORE_PASS --key-pass pass:$KEY_PASS --out "app-release.apk" "app-release-aligned.apk"
-      #     ls
-      #     apksigner verify -v "app-release.apk"
+          $ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner verify -v "app-release.apk"
       
       
       
