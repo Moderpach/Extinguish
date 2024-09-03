@@ -42,7 +42,6 @@ jobs:
       - name: Build Project
         run: |
           ./gradlew assembleRelease
-          ls ./app/build/outputs/apk/release
 
       - name: Signing
         env:
