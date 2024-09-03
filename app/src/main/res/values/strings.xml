@@ -1,0 +1,102 @@
+<resources>
+    <string name="app_name" translatable="false">Extinguish</string>
+    <string name="navigate_back">navigate back</string>
+    <string name="TestActivity" translatable="false">TestActivity</string>
+    <string name="str_notificationCh_service_name">Extinguish Service</string>
+    <string name="str_notificationCh_service_description">Control Extinguish Service and screen state with notification</string>
+    <string name="Quick_settings_tiles">Quick settings tiles</string>
+    <string name="Extinguish_Service">Extinguish Service</string>
+    <string name="On">On</string>
+    <string name="Off">Off</string>
+    <string name="Unavailable">Unavailable</string>
+    <string name="Screen_state">Screen state</string>
+    <string name="Turn_screen_off">Turn screen off</string>
+    <string name="Start">Start</string>
+    <string name="Stop">Stop</string>
+    <string name="Restart">Restart</string>
+    <string name="Starting">Starting</string>
+    <string name="Current_solution">Current solution</string>
+    <string name="str_ShizukuPowerOffScreen">Shizuku | Set screen power off</string>
+    <string name="str_ShizukuScreenBrightnessNeg1">Shizuku | Set screen brightness to -1</string>
+    <string name="Switch">Switch</string>
+    <string name="Help">Help</string>
+    <string name="Floating_button">Floating button</string>
+    <string name="Timers">Timers</string>
+    <string name="Preset_timers">Preset timers</string>
+    <string name="Volume_key_control">Volume key control</string>
+    <string name="Enabled">Enabled</string>
+    <string name="Disabled">Disabled</string>
+    <string name="str_clickToTurnScreenOn">Press to turn screen on</string>
+    <string name="str_clickToTurnScreenOff">Press to turn screen off</string>
+    <string name="Touch_screen_to_turn_it_on">Touch screen to turn it on</string>
+    <string name="Notification_control">Notification control</string>
+    <string name="Quick_settings_tiles_control">Quick settings tiles control</string>
+    <string name="External_control">External control</string>
+    <string name="About">About</string>
+    <string name="Compatibility_options">Compatibility options</string>
+    <string name="More_settings">More settings</string>
+    <string name="Solutions">Solutions</string>
+    <string name="str_hideWhenScreenOff">Hide when screen off</string>
+    <string name="str_autoMoveToEdge">Auto move to edge</string>
+    <string name="str_fadeWhenUnused">Fade when unused</string>
+    <string name="str_fadeTransparency">Fade transparency</string>
+    <string name="str_blackStyle">Black style</string>
+    <string name="str_showTimerButton">Show timer button</string>
+    <string name="str_mergeTimerButton">Merge timer button</string>
+    <string name="str_volumeKeyListeningMethod">Method of getting volume key event</string>
+    <string name="str_shell" translatable="false">Shell</string>
+    <string name="str_android_window" translatable="false">Android Window</string>
+    <string name="Compatibility">Compatibility</string>
+    <string name="str_brightnessManualWhenScreenOff">Set brightness manual when screen off</string>
+    <string name="Copy">Copy</string>
+    <string name="Parameter">Parameter</string>
+    <string name="str_ShizukuPowerOffScreen_supporting">During screen off, the device cannot respond to touch events on the screen. \nDoes not support \'Touch screen to turn it on\'. \nApplicable to various screens, such as LCD, OLED, etc. \nBehavior may change due to customizations by the device manufacturer.</string>
+    <string name="str_ShizukuScreenBrightnessNeg1_supporting">During screen off, the device can respond to touch events on the screen. \nSupports touch screen wake-up. \nApplicable to various screens, such as LCD, OLED, etc. \nBehavior may change due to customizations by the device manufacturer. For example, on some devices, this solution cannot make the screen completely stop emitting light.</string>
+    <string name="str_Touch_screen_to_turn_it_on_supporting">Only support \'Shizuku | Set screen brightness to -1\'</string>
+    <string name="Settings">Settings</string>
+    <string name="str_mergeTimerButton_supporting">Long click \'turn off screen\' button to show timer popup</string>
+    <string name="str_brightnessManualWhenScreenOff_supporting">Prevent automatic brightness from interfering with the Extinguish service.</string>
+    <string name="Version">Version</string>
+    <string name="moderpach" translatable="false">Moderpach</string>
+    <string name="str_developer_email" translatable="false">powermoderpach@gmail.com</string>
+    <string name="Contact">Contact</string>
+    <string name="Repository">Repository</string>
+    <string name="Developer">Developer</string>
+    <string name="Licenses">Licenses</string>
+    <string name="Solutions_sources">Solutions sources</string>
+    <string name="User_agreement">User agreement</string>
+    <string name="Privacy_policy">Privacy policy</string>
+    <string name="Presets">Presets</string>
+    <string name="Keyboard">Keyboard</string>
+    <string name="str_Hour">H</string>
+    <string name="str_Minute">M</string>
+    <string name="str_Second">S</string>
+    <string name="Launch_timer">Launch timer</string>
+    <string name="Save">Save</string>
+    <string name="str_timer_limit">Timer should be larger than 1s</string>
+    <string name="Close">Close</string>
+    <string name="Add_timer">Add timer</string>
+    <string name="Copied">Copied</string>
+    <string name="Delete">Delete</string>
+    <string name="str_shell_supporting">It will not intercept the system volume key functions. It will not interfere with app focus, input methods, or gesture navigation.</string>
+    <string name="str_android_window_supporting">It will intercept the system volume key functions. However, it may cause issues with app focus, input methods, and gesture navigation.</string>
+    <string name="Show_timer_popup">Show timer popup</string>
+    <string name="Previous">Previous</string>
+    <string name="Next">Next</string>
+    <string name="Shizuku_is_not_running">Shizuku is not running</string>
+    <string name="str_Shizuku_is_not_running_supporting">The solution you selected require shizuku running</string>
+    <string name="str_You_can">You can:</string>
+    <string name="Reselect_solution">Reselect solution</string>
+    <string name="Learn_more_about_Shizuku">Learn more about Shizuku</string>
+    <string name="Download_Shizuku">Download Shizuku</string>
+    <string name="User_manual_of_Shizuku">User manual of Shizuku</string>
+    <string name="Open_Shizuku">Open Shizuku</string>
+    <string name="Complete">Complete</string>
+    <string name="User_agreement_and_Privacy_policy">User agreement and Privacy policy</string>
+    <string name="str_User_agreement_and_Privacy_policy_supporting">Due to legal requirements in the area where your device is located, please read and agree to our terms before use</string>
+    <string name="Agree">Agree</string>
+    <string name="Select_a_solution">Select a solution</string>
+    <string name="str_Select_a_solution_supporting1">You can reselect the solution at any time</string>
+    <string name="str_Select_a_solution_supporting2">Depending on the device manufacturer, solutions may exhibit different behaviors.</string>
+
+</resources>

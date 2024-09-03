@@ -1,0 +1,14 @@
+The privacy policy of Extinguish is included and updated with each version. Extinguish will only follow the privacy policy that comes into effect with each version. This privacy policy only applies to versions originally released by Moderpach. You can contact the developer at poweremoderpach@gmail.com.
+
+Minimum Effective Version: 0.9
+
+Extinguish does not collect, store, use, transmit, share, or disclose any of your personal information.
+
+Extinguish relies on the following system permissions:
+
+1. Send notifications: Used to show notification controller and error messages.
+2. Display on other apps (floating window): Used to display floating buttons and capture volume key events.
+3. Shizuku: Used to turn off the screen and capture volume key and screen tap events.
+4. Foreground service: Used to ensure the stability of Extinguish services.
+
+Due to the special permissions of Shizuku and display over other apps (floating window), which may allow the app to access your personal information, please be aware that Extinguish cannot guarantee the security of your personal information in the event of a malicious attack.

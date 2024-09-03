@@ -1,0 +1,5 @@
+This version is now supporting Android 14.
+All run modes are now supporting Android 14, but some of them may not work properly on some devices. If the run mode you selected does not work properly, please change the run mode.
+
+# Extinguish may not work properly on some devices due to system reasons.
+# You can find history versions in "https://github.com/Moderpach/Extinguish_package/releases".

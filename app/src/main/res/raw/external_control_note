@@ -1,0 +1,39 @@
+You can control the Extinguish service externally through the Android Debug Bridge (ADB).
+`adb shell am startservice -n own.moderpach.extinguish/.service.ExtinguishService --ei <Parameter> <Value>
+You can specify multiple parameters or no parameters. You need to add '--ei' before each specified parameter.
+
+Parameter screen
+    0 Turn screen on
+    1 Turn screen off
+    2 Switch screen state
+Example
+Turn screen on:
+`adb shell am startservice -n own.moderpach.extinguish/.service.ExtinguishService --ei screen 0
+Turn screen off:
+`adb shell am startservice -n own.moderpach.extinguish/.service.ExtinguishService --ei screen 1
+Switch screen state:
+`adb shell am startservice -n own.moderpach.extinguish/.service.ExtinguishService --ei screen 2
+
+Parameter fb
+    0 Show floating button
+    1 Hide floating button
+    2 Switch floating button state
+* This parameter does not override the floating button enable setting
+Example
+Show floating button:
+`adb shell am startservice -n own.moderpach.extinguish/.service.ExtinguishService --ei fb 0
+Hide floating button:
+`adb shell am startservice -n own.moderpach.extinguish/.service.ExtinguishService --ei fb 1
+Switch floating button state:
+`adb shell am startservice -n own.moderpach.extinguish/.service.ExtinguishService --ei fb 2
+
+Parameter rfb
+    1 Remove floating button in this service
+* This parameter overrides the floating button enabled setting and is only valid when the Extinguish service is not running.
+Example
+`adb shell am startservice -n own.moderpach.extinguish/.service.ExtinguishService --ei rfb 1
+
+Parameter stop
+    1 Stop service
+Example
+`adb shell am startservice -n own.moderpach.extinguish/.service.ExtinguishService --ei stop 1
