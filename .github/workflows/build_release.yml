@@ -17,16 +17,38 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # Setup Java
-      - uses: actions/setup-java@v4
+      - name: Retrieve the secret and decode it to a file
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS}}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS}}
+          KEY_PASS: ${{ secrets.KEY_PASS}}
+        run: |
+          echo $KEYSTORE_BASE64 | base64 --decode > extinguish.jks
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: 'corretto' # See 'Supported distributions' for available options
           java-version: '17'
 
-      # Setup Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # See Project
-      - name: See Project
-        run: ls 
+      - name: Build Project
+        run: |
+          ./gradlew assembleRelease
+          ls ./app/build/outputs/apk/release
+
+      - name: Signing
+        run: |
+          cd ./app/build/outputs/apk/release
+          ls
+          zipalign -v -p 4 app-release.apk app-release-aligned.apk
+          apksigner sign --ks "./extinguish.jks" --ks-key-alias $KEY_ALIAS --ks-pass pass:$KEYSTORE_PASS --key-pass pass:$KEY_PASS --out "app-release.apk" "app-release-aligned.apk"
+          ls
+          apksigner verify -v "app-release.apk"
+      
+      
+      
+      
