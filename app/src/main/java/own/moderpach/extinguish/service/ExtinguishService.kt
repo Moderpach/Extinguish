@@ -94,7 +94,7 @@ class ExtinguishService : LifecycleService() {
                 if (requestScreenOn) floatingButtonHost?.show()
                 else floatingButtonHost?.hide()
             } else {
-                floatingButtonHost?.updateScreenState(true)
+                floatingButtonHost?.updateScreenState(requestScreenOn)
             }
         }
 
@@ -307,7 +307,10 @@ class ExtinguishService : LifecycleService() {
                             }
                         }
 
-                        FloatingButtonHost.Action.TurnScreenOn -> turnScreenOn()
+                        FloatingButtonHost.Action.TurnScreenOn -> {
+                            turnScreenOn()
+                            updateHostState(true, feature)
+                        }
                     }
                 }
             }
