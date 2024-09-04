@@ -52,7 +52,7 @@ jobs:
         run: |
           apk_path="./app/build/outputs/apk/release"
           build_tools_path="$ANDROID_SDK_ROOT/build-tools/35.0.0"
-          $build_tools_path/zipalign -v -p 4 "$apk_path/app-release-unsigned.apk" "$apk_path/app-release-aligned.apk"
+          $build_tools_path/zipalign -v -p 4 "$apk_path/app-release.apk" "$apk_path/app-release-aligned.apk"
           $build_tools_path/apksigner sign --ks "./extinguish.jks" --ks-key-alias $KEY_ALIAS --ks-pass pass:$KEYSTORE_PASS --key-pass pass:$KEY_PASS --out "$apk_path/app-release.apk" "$apk_path/app-release-aligned.apk"
           $build_tools_path/apksigner verify -v "$apk_path/app-release.apk"
       
