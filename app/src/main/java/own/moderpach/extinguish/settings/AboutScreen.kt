@@ -1,5 +1,7 @@
 package own.moderpach.extinguish.settings
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -140,7 +142,13 @@ fun AboutScreen(
                     )
                     SettingListItem(
                         headline = stringResource(R.string.Repository),
-                        supporting = "Moderpach"
+                        supporting = "https://github.com/Moderpach/Extinguish",
+                        onClick = {
+                            Intent(Intent.ACTION_VIEW).apply {
+                                setData(Uri.parse("https://github.com/Moderpach/Extinguish"))
+                                context.startActivity(this)
+                            }
+                        }
                     )
                 }
             }
