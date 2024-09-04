@@ -4,7 +4,6 @@ import android.os.Build
 import android.util.Log
 import extinguish.hiddenAPI.server.display.DisplayControlProxy
 import extinguish.hiddenAPI.view.SurfaceControlProxy
-import extinguish.shizuku_service.result.IntResult
 import extinguish.shizuku_service.result.UnitResult
 import kotlin.system.exitProcess
 

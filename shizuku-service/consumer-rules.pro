@@ -1,0 +1,2 @@
+-keep class extinguish.shizuku_service.DisplayControlService
+-keep class extinguish.shizuku_service.EventsProviderService
