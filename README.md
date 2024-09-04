@@ -1,6 +1,10 @@
 # Extinguish
 
-An app that helps you run any android apps as if the screen is on while it is off.
+English
+|
+[简体中文](https://github.com/Moderpach/Extinguish/blob/master/README_ZH_CN.md)
+
+Helps you run any android apps as if the screen is on while it is off.
 
 <div align="left">
 <img src="https://raw.githubusercontent.com/Moderpach/Extinguish/master/doc/screenshot_home_en.png" width="30%" alt="home"/>
