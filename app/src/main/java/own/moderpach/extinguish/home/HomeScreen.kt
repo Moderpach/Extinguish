@@ -1,9 +1,7 @@
 package own.moderpach.extinguish.home
 
-import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
@@ -65,7 +63,6 @@ import androidx.navigation.NavGraphBuilder
 import kotlinx.coroutines.delay
 import own.moderpach.extinguish.ExtinguishNavGraph
 import own.moderpach.extinguish.ExtinguishNavRoute
-import own.moderpach.extinguish.service.ExtinguishService
 import own.moderpach.extinguish.ISolutionsStateManager
 import own.moderpach.extinguish.ISystemPermissionsManager
 import own.moderpach.extinguish.R
@@ -77,7 +74,7 @@ import own.moderpach.extinguish.home.cards.screenEventControl
 import own.moderpach.extinguish.home.cards.solution
 import own.moderpach.extinguish.home.cards.tileControl
 import own.moderpach.extinguish.home.cards.volumeKeyControl
-import own.moderpach.extinguish.service.hosts.NotificationHost.Companion.NOTIFICATION_ID
+import own.moderpach.extinguish.service.ExtinguishService
 import own.moderpach.extinguish.settings.data.ISettingsRepository
 import own.moderpach.extinguish.settings.data.SettingsTokens
 import own.moderpach.extinguish.settings.test.FakeSettingsRepository
@@ -131,7 +128,6 @@ fun NavGraphBuilder.home(
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !systemPermissionsManager.isPostNotificationGranted) {
                     systemPermissionsManager.requestPostNotification()
-                    return@HomeScreen
                 }
                 Intent(
                     context,
