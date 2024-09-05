@@ -13,7 +13,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import java.util.concurrent.atomic.AtomicInteger
 
 private const val TAG = "ExceptionNotifier"
 
@@ -49,21 +48,23 @@ class ExceptionNotifier : BroadcastReceiver() {
         const val EXTRA_EXCEPTION = "exception"
         const val EXTRA_MASSAGE = "massage"
 
-        private var notificationId = AtomicInteger(1)
+        private var NOTIFICATION_ID = 1
     }
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == ACTION_NOTIFY) {
             Log.d(TAG, "onReceive: ACTION_NOTIFY")
+            Log.d(TAG, "onReceive: EXTRA_MASSAGE = ${intent.getStringExtra(EXTRA_MASSAGE)}")
+            Log.d(TAG, "onReceive: EXTRA_EXCEPTION = ${intent.getStringExtra(EXTRA_EXCEPTION)}")
             val copyAction = with(
                 PendingIntent.getBroadcast(
-                    context, 1,
+                    context, NOTIFICATION_ID,
                     Intent(context, ExceptionNotifier::class.java).apply {
                         setAction(ACTION_COPY)
                         putExtra(EXTRA_MASSAGE, intent.getStringExtra(EXTRA_MASSAGE))
                         putExtra(EXTRA_EXCEPTION, intent.getStringExtra(EXTRA_EXCEPTION))
                     },
-                    PendingIntent.FLAG_IMMUTABLE
+                    PendingIntent.FLAG_IMMUTABLE + PendingIntent.FLAG_UPDATE_CURRENT
                 )
             ) {
                 NotificationCompat.Action.Builder(
@@ -86,7 +87,7 @@ class ExceptionNotifier : BroadcastReceiver() {
                 ) {
                     return@with
                 }
-                notify(notificationId.getAndIncrement(), builder.build())
+                notify(NOTIFICATION_ID, builder.build())
             }
         }
 
@@ -95,7 +96,7 @@ class ExceptionNotifier : BroadcastReceiver() {
                 context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip: ClipData = ClipData.newPlainText(
                 intent.getStringExtra(EXTRA_MASSAGE),
-                intent.getStringExtra(EXTRA_EXCEPTION)
+                intent.getStringExtra(EXTRA_EXCEPTION) ?: ""
             )
             clipboardManager.setPrimaryClip(clip)
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2)
