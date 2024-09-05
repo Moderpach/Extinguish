@@ -615,7 +615,7 @@ class ExtinguishService : LifecycleService() {
                 }
 
                 ShizukuScreenBrightnessNeg1 -> {
-                    displayControlService?.setBrightnessToSurfaceControl(5f).let {
+                    displayControlService?.setBrightnessToSurfaceControl(0f).let {
                         if (it is UnitResult.Err) {
                             notifyException(ExceptionMassages.MethodNotFound, it.message)
                         }
