@@ -1,11 +1,8 @@
 package own.moderpach.extinguish
 
 import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
 
 class ExtinguishApplication : Application() {
-
     override fun onCreate() {
         super.onCreate()
 

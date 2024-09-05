@@ -29,7 +29,7 @@ class NotificationHost<T>(
     private val builder =
         NotificationCompat.Builder(owner, ExtinguishNotificationChannels.Service.id)
             .setSmallIcon(R.drawable.extinguish_24px)
-            .setContentTitle("Extinguish 服务正在运行")
+            .setContentTitle(owner.getString(R.string.Extinguish_service_is_running))
             .setOnlyAlertOnce(true)
             .setOngoing(true)
 
@@ -50,7 +50,7 @@ class NotificationHost<T>(
             val value = ExtinguishService.EXTRA_VALUE_SCREEN_ON
             putExtra(ExtinguishService.EXTRA_SCREEN, value)
         }
-        val text = "打开屏幕"
+        val text = owner.getText(R.string.Turn_screen_on)
         val action = NotificationCompat.Action.Builder(
             null, text, intent.toPendingIntent(0)
         ).build()
@@ -62,7 +62,7 @@ class NotificationHost<T>(
             val value = ExtinguishService.EXTRA_VALUE_SCREEN_OFF
             putExtra(ExtinguishService.EXTRA_SCREEN, value)
         }
-        val text = "关闭屏幕"
+        val text = owner.getText(R.string.Turn_screen_off)
         val action = NotificationCompat.Action.Builder(
             null, text, intent.toPendingIntent(1)
         ).build()
@@ -74,7 +74,7 @@ class NotificationHost<T>(
             val value = ExtinguishService.EXTRA_VALUE_FLOATING_BUTTON_SHOW
             putExtra(ExtinguishService.EXTRA_FLOATING_BUTTON, value)
         }
-        val text = "显示悬浮按钮"
+        val text = owner.getText(R.string.Show_floating_button)
         val action = NotificationCompat.Action.Builder(
             null, text, intent.toPendingIntent(3)
         ).build()
@@ -86,7 +86,7 @@ class NotificationHost<T>(
             val value = ExtinguishService.EXTRA_VALUE_FLOATING_BUTTON_HIDE
             putExtra(ExtinguishService.EXTRA_FLOATING_BUTTON, value)
         }
-        val text = "隐藏悬浮按钮"
+        val text = owner.getText(R.string.Hide_floating_button)
         val action = NotificationCompat.Action.Builder(
             null, text, intent.toPendingIntent(4)
         ).build()
@@ -98,7 +98,7 @@ class NotificationHost<T>(
             val value = ExtinguishService.EXTRA_VALUE_STOP
             putExtra(ExtinguishService.EXTRA_STOP, value)
         }
-        val text = "停止服务"
+        val text = owner.getText(R.string.Stop)
         val action = NotificationCompat.Action.Builder(
             null, text, intent.toPendingIntent(5)
         ).build()
@@ -110,7 +110,13 @@ class NotificationHost<T>(
         isFloatingButtonShowing: Boolean,
         isFloatingButtonEnabled: Boolean
     ) = builder
-        .setContentText("预期当前屏幕状态为 ${getCurrentStateText(isScreenOn)}")
+        .setContentText(
+            "${owner.getText(R.string.Expected_screen_state)} : ${
+                getCurrentStateText(
+                    isScreenOn
+                )
+            }"
+        )
         .clearActions()
         .let {
             if (isScreenOn) it.turnScreenOffAction()
@@ -138,8 +144,8 @@ class NotificationHost<T>(
 
     private fun getCurrentStateText(isScreenOn: Boolean): String {
         return when (isScreenOn) {
-            true -> "打开"
-            false -> "关闭"
+            true -> owner.getString(R.string.On)
+            false -> owner.getString(R.string.Off)
         }
     }
 

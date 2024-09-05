@@ -11,7 +11,6 @@ import own.moderpach.extinguish.settings.data.settingsDataStore
 import own.moderpach.extinguish.settings.data.settingsRepository
 import own.moderpach.extinguish.timer.data.ITimersRepository
 import own.moderpach.extinguish.timer.data.TimersDatabase
-import own.moderpach.extinguish.timer.data.TimersRepository
 import own.moderpach.extinguish.timer.data.timersRepository
 import rikka.sui.Sui
 

@@ -6,23 +6,18 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
-import android.se.omapi.SEService.OnConnectedListener
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.runBlocking
+import own.moderpach.extinguish.ExceptionNotifier
 import own.moderpach.extinguish.service.ExtinguishService
 import own.moderpach.extinguish.service.hosts.FloatingButtonHost
 import own.moderpach.extinguish.ui.components.ExtinguishOutlinedButton
@@ -79,6 +74,32 @@ class TestActivity : ComponentActivity() {
                                 floatingButtonHost?.destroy()
                             },
                             text = "destroy floating button host"
+                        )
+                        ExtinguishOutlinedButton(
+                            onClick = {
+                                Intent(this@TestActivity, ExceptionNotifier::class.java).apply {
+                                    setAction(ExceptionNotifier.ACTION_NOTIFY)
+                                    putExtra(
+                                        ExceptionNotifier.EXTRA_MASSAGE,
+                                        "This is exception massage."
+                                    )
+                                    putExtra(
+                                        ExceptionNotifier.EXTRA_EXCEPTION,
+                                        "This is exception detail"
+                                    )
+                                    sendBroadcast(this)
+                                }
+                            },
+                            text = "send exception broadcast notify"
+                        )
+                        ExtinguishOutlinedButton(
+                            onClick = {
+                                Intent(this@TestActivity, ExceptionNotifier::class.java).apply {
+                                    setAction(ExceptionNotifier.ACTION_COPY)
+                                    sendBroadcast(this)
+                                }
+                            },
+                            text = "send exception broadcast copy"
                         )
                     }
                 }

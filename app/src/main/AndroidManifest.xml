@@ -20,6 +20,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Extinguish"
         tools:targetApi="34">
+        <receiver
+            android:name=".ExceptionNotifier"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="extinguish.exception.notify" />
+                <action android:name="extinguish.exception.copy" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".test.TestActivity"
             android:exported="true"
@@ -38,8 +48,8 @@
         <service
             android:name=".service.ExtinguishServiceTile"
             android:exported="true"
-            android:label="@string/Extinguish_Service"
             android:icon="@drawable/linked_services_24px"
+            android:label="@string/Extinguish_Service"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
@@ -48,8 +58,8 @@
         <service
             android:name=".service.ScreenControlTile"
             android:exported="true"
-            android:label="@string/Turn_screen_off"
             android:icon="@drawable/extinguish_24px"
+            android:label="@string/Turn_screen_off"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />

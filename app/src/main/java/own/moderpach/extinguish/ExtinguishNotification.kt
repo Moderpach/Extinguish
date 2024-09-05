@@ -17,6 +17,12 @@ enum class ExtinguishNotificationChannels(
         nameResId = R.string.str_notificationCh_service_name,
         descriptionResId = R.string.str_notificationCh_service_description,
         importance = NotificationManager.IMPORTANCE_MIN,
+    ),
+    Exception(
+        id = "exception",
+        nameResId = R.string.str_notificationCh_exception_name,
+        descriptionResId = R.string.str_notificationCh_exception_description,
+        importance = NotificationManager.IMPORTANCE_HIGH,
     )
 }
 

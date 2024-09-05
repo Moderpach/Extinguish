@@ -98,5 +98,17 @@
     <string name="Select_a_solution">Select a solution</string>
     <string name="str_Select_a_solution_supporting1">You can reselect the solution at any time</string>
     <string name="str_Select_a_solution_supporting2">Depending on the device manufacturer, solutions may exhibit different behaviors.</string>
+    <string name="str_notificationCh_exception_name">Exception report</string>
+    <string name="str_notificationCh_exception_description">Notify on exception</string>
+    <string name="Extinguish_service_is_running">Extinguish 服务正在运行</string>
+    <string name="Turn_screen_on">Turn screen on</string>
+    <string name="Show_floating_button">Show floating button</string>
+    <string name="Hide_floating_button">Hide floating button</string>
+    <string name="Expected_screen_state">Expected screen state</string>
+    <string name="Copy_logs">Copy logs</string>
+    <string name="Runtime_exception_detected">Runtime exception detected</string>
+    <string name="str_exc_methodNotFound">Failed to access the system function. This solution may not be compatible with this device.</string>
+    <string name="str_exc_readBrightnessSettingFailed">Fail to read brightness setting. If your device supports setting brightness or brightness mode, manual setting brightness or brightness mode(auto brightness) may solve the problem.</string>
+    <string name="str_exc_shizukuFailed">Extinguish failed to connect to Shizuku. This could be a bug, or Shizuku might not be working properly.</string>
 
 </resources>
