@@ -28,6 +28,7 @@ import kotlinx.coroutines.withTimeout
 import own.moderpach.extinguish.BuildConfig
 import own.moderpach.extinguish.ExceptionMassages
 import own.moderpach.extinguish.notifyException
+import own.moderpach.extinguish.service.hosts.AwakeHost
 import own.moderpach.extinguish.service.hosts.FloatingButtonHost
 import own.moderpach.extinguish.service.hosts.NotificationHost
 import own.moderpach.extinguish.service.hosts.ScreenEventHost
@@ -83,6 +84,7 @@ class ExtinguishService : LifecycleService() {
     //lateinit var internalPassword: String
 
     var floatingButtonHost: FloatingButtonHost<ExtinguishService>? = null
+    var awakeHost: AwakeHost? = null
     var volumeKeyEventWindowHost: VolumeKeyEventWindowHost? = null
     var volumeKeyEventShizukuHost: VolumeKeyEventShizukuHost? = null
     var screenEventHost: ScreenEventHost? = null
@@ -92,6 +94,11 @@ class ExtinguishService : LifecycleService() {
         requestScreenOn: Boolean,
         feature: Feature
     ) {
+        lifecycleScope.launch {
+            if (requestScreenOn) awakeHost?.stopKeepAwake()
+            else awakeHost?.startKeepAwake()
+        }
+
         if (feature.enabledFloatingButtonControl) {
             if (feature.hideFloatingButtonWhenScreenOff) {
                 if (requestScreenOn) floatingButtonHost?.show()
@@ -282,6 +289,8 @@ class ExtinguishService : LifecycleService() {
                 return@launch
             }
 
+            awakeHost = AwakeHost(this@ExtinguishService)
+
             if (feature.enabledFloatingButtonControl) {
                 floatingButtonHost = FloatingButtonHost(
                     this@ExtinguishService,
@@ -363,6 +372,7 @@ class ExtinguishService : LifecycleService() {
                     delay(50)
                 }
                 if (isActive) {
+                    awakeHost?.create()
                     floatingButtonHost?.create()
 
                     eventsProviderService?.let { service ->
@@ -434,6 +444,7 @@ class ExtinguishService : LifecycleService() {
     override fun onDestroy() {
         Log.d(TAG, "onDestroy: ")
         unregisterSystemLockReceiver()
+        awakeHost?.destroy()
         floatingButtonHost?.destroy()
         volumeKeyEventWindowHost?.destroy()
         volumeKeyEventShizukuHost?.unregister()
