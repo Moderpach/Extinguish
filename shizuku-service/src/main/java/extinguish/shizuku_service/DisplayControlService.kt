@@ -57,7 +57,12 @@ class DisplayControlService : IDisplayControl.Stub() {
                 }
             }
         } catch (e: Exception) {
-            return UnitResult.Err(ERR_FROM_HIDDEN_API, e.toString())
+            val massage = buildString {
+                append(e.stackTraceToString())
+                append("---")
+                append(e.cause?.stackTraceToString())
+            }
+            return UnitResult.Err(ERR_FROM_HIDDEN_API, massage)
         }
         return UnitResult.Ok()
     }
@@ -83,7 +88,12 @@ class DisplayControlService : IDisplayControl.Stub() {
                 }
             }
         } catch (e: Exception) {
-            return UnitResult.Err(ERR_FROM_HIDDEN_API, e.toString())
+            val massage = buildString {
+                append(e.stackTraceToString())
+                append("---")
+                append(e.cause?.stackTraceToString())
+            }
+            return UnitResult.Err(ERR_FROM_HIDDEN_API, massage)
         }
         return UnitResult.Ok()
     }
