@@ -26,11 +26,20 @@ including LCD and OLED.
 Extinguish supports using the following methods to control the screen state:
 
 - Floating button
+  > Floating button is including a timer popup. You can set
+  > when the screen turns on after it turns off.
 - Volume key event
 - Touch screen
 - Notification
 - Quick settings tile
 - ADB command
 
-> Floating button is including a timer popup. You can set
-> when the screen turns on after it turns off.
+## Download
+
+[Github Release](https://github.com/Moderpach/Extinguish/releases)
+
+[Google Play](https://play.google.com/store/apps/details?id=own.moderpach.extinguish)
+
+Lower than 0.2.6:
+
+[Moderpach/Extinguish_package](https://github.com/Moderpach/Extinguish_package)

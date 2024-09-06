@@ -24,10 +24,19 @@ LCD 和 OLED。
 Extinguish 支持使用以下方法控制屏幕状态:
 
 - 悬浮按钮
+  > 悬浮按钮包含一个定时器弹窗。您可以设置屏幕关闭后打开的时间。
 - 音量键事件
 - 触碰屏幕
 - 通知
 - 快捷设置磁贴
 - ADB 命令
 
-> 悬浮按钮包含一个定时器弹窗。您可以设置屏幕关闭后打开的时间。
+## 下载
+
+[Github Release](https://github.com/Moderpach/Extinguish/releases)
+
+[Google Play](https://play.google.com/store/apps/details?id=own.moderpach.extinguish)
+
+低于 0.2.6:
+
+[Moderpach/Extinguish_package](https://github.com/Moderpach/Extinguish_package)
