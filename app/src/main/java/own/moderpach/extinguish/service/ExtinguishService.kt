@@ -452,8 +452,8 @@ class ExtinguishService : LifecycleService() {
 
         eventsProviderService?.stop()
 
-        unbindEventsProviderService()
-        unbindDisplayControlService()
+        if (eventsProviderService != null) unbindEventsProviderService()
+        if (displayControlService != null) unbindDisplayControlService()
 
         super.onDestroy()
         state.update { State.Destroyed }
