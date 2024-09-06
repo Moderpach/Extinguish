@@ -19,7 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Extinguish"
-        tools:targetApi="34">
+        tools:targetApi="35">
         <receiver
             android:name=".ExceptionNotifier"
             android:enabled="true"
@@ -43,7 +43,7 @@
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="make display controller windows on other apps more stable" />
+                android:value="show floating buttons for users to control app" />
         </service>
         <service
             android:name=".service.ExtinguishServiceTile"

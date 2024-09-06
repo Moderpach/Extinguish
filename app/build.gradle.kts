@@ -17,7 +17,7 @@ android {
     defaultConfig {
         applicationId = "own.moderpach.extinguish"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 29
         versionName = "0.9"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
