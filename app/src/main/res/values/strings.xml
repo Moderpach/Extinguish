@@ -51,7 +51,7 @@
     <string name="Copy">Copy</string>
     <string name="Parameter">Parameter</string>
     <string name="str_ShizukuPowerOffScreen_supporting">During screen off, the device cannot respond to touch events on the screen. \nDoes not support \'Touch screen to turn it on\'. \nApplicable to various screens, such as LCD, OLED, etc. \nBehavior may change due to customizations by the device manufacturer.</string>
-    <string name="str_ShizukuScreenBrightnessNeg1_supporting">During screen off, the device can respond to touch events on the screen. \nSupports touch screen wake-up. \nApplicable to various screens, such as LCD, OLED, etc. \nBehavior may change due to customizations by the device manufacturer. For example, on some devices, this solution cannot make the screen completely stop emitting light.</string>
+    <string name="str_ShizukuScreenBrightnessNeg1_supporting">During screen off, the device can respond to touch events on the screen. \nSupports touch screen to turn it on. \nApplicable to various screens, such as LCD, OLED, etc. \nBehavior may change due to customizations by the device manufacturer. For example, on some devices, this solution cannot make the screen completely stop emitting light.</string>
     <string name="str_Touch_screen_to_turn_it_on_supporting">Only support \'Shizuku | Set screen brightness to -1\'</string>
     <string name="Settings">Settings</string>
     <string name="str_mergeTimerButton_supporting">Long click \'turn off screen\' button to show timer popup</string>
@@ -100,7 +100,7 @@
     <string name="str_Select_a_solution_supporting2">Depending on the device manufacturer, solutions may exhibit different behaviors.</string>
     <string name="str_notificationCh_exception_name">Exception report</string>
     <string name="str_notificationCh_exception_description">Notify on exception</string>
-    <string name="Extinguish_service_is_running">Extinguish 服务正在运行</string>
+    <string name="Extinguish_service_is_running">Extinguish service is running</string>
     <string name="Turn_screen_on">Turn screen on</string>
     <string name="Show_floating_button">Show floating button</string>
     <string name="Hide_floating_button">Hide floating button</string>
