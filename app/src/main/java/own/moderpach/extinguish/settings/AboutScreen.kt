@@ -137,10 +137,6 @@ fun AboutScreen(
                         supporting = stringResource(R.string.moderpach)
                     )
                     SettingListItem(
-                        headline = stringResource(R.string.Contact),
-                        supporting = stringResource(R.string.str_developer_email)
-                    )
-                    SettingListItem(
                         headline = stringResource(R.string.Repository),
                         supporting = "https://github.com/Moderpach/Extinguish",
                         onClick = {
