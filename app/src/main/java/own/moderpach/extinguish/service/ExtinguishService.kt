@@ -364,62 +364,64 @@ class ExtinguishService : LifecycleService() {
 
             bindDisplayControlService()
 
-            withTimeout(3000) {
-                while (
-                    displayControlService == null ||
-                    (shouldBindEventsProviderService && eventsProviderService == null)
-                ) {
-                    delay(50)
-                }
-                if (isActive) {
-                    awakeHost?.create()
-                    floatingButtonHost?.create()
+            withTimeout(8000) {
+                try {
+                    while (
+                        displayControlService == null ||
+                        (shouldBindEventsProviderService && eventsProviderService == null)
+                    ) {
+                        delay(50)
+                    }
+                } finally {
+                    if (isActive) {
+                        awakeHost?.create()
+                        floatingButtonHost?.create()
 
-                    eventsProviderService?.let { service ->
-                        volumeKeyEventShizukuHost = VolumeKeyEventShizukuHost(
-                            this@ExtinguishService, service
-                        ) {
-                            if (isScreenOn) {
-                                updateHostState(false, feature)
-                                turnScreenOff()
-                            } else {
-                                updateHostState(true, feature)
-                                turnScreenOn()
-                            }
-                        }.also { it.register() }
+                        eventsProviderService?.let { service ->
+                            volumeKeyEventShizukuHost = VolumeKeyEventShizukuHost(
+                                this@ExtinguishService, service
+                            ) {
+                                if (isScreenOn) {
+                                    updateHostState(false, feature)
+                                    turnScreenOff()
+                                } else {
+                                    updateHostState(true, feature)
+                                    turnScreenOn()
+                                }
+                            }.also { it.register() }
 
-                        screenEventHost = ScreenEventHost(
-                            this@ExtinguishService, service
-                        ) {
-                            if (!isScreenOn) {
-                                updateHostState(true, feature)
-                                turnScreenOn()
+                            screenEventHost = ScreenEventHost(
+                                this@ExtinguishService, service
+                            ) {
+                                if (!isScreenOn) {
+                                    updateHostState(true, feature)
+                                    turnScreenOn()
+                                }
+                            }.also {
+                                it.register()
+                                if (isScreenOn) it.sleep()
                             }
-                        }.also {
-                            it.register()
-                            if (isScreenOn) it.sleep()
+
+                            service.launch("-F -e \": 0001 014a\" -e \": 0001 0072\" -e \": 0001 0073\"")
                         }
 
-                        service.launch("-F -e \": 0001 014a\" -e \": 0001 0072\" -e \": 0001 0073\"")
+                        registerSystemLockReceiver()
+
+                        notificationHost.notify(
+                            isScreenOn,
+                            floatingButtonHost?.isShowing ?: false,
+                            feature.enabledFloatingButtonControl
+                        ).also {
+                            startForeground(NotificationHost.NOTIFICATION_ID, it)
+                        }
+
+                        state.update { State.Prepared }
+                    } else {
+                        notifyException(ExceptionMassages.ShizukuFailed, null)
+                        state.update { State.Error }
                     }
-
-                    registerSystemLockReceiver()
-
-                    notificationHost.notify(
-                        isScreenOn,
-                        floatingButtonHost?.isShowing ?: false,
-                        feature.enabledFloatingButtonControl
-                    ).also {
-                        startForeground(NotificationHost.NOTIFICATION_ID, it)
-                    }
-
-                    state.update { State.Prepared }
-                } else {
-                    notifyException(ExceptionMassages.ShizukuFailed, null)
-                    state.update { State.Error }
                 }
             }
-
         }
     }
 
