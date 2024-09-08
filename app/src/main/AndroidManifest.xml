@@ -30,12 +30,6 @@
             </intent-filter>
         </receiver>
 
-        <activity
-            android:name=".test.TestActivity"
-            android:exported="true"
-            android:label="@string/TestActivity"
-            android:theme="@style/Theme.Extinguish" />
-
         <service
             android:name=".service.ExtinguishService"
             android:enabled="true"
