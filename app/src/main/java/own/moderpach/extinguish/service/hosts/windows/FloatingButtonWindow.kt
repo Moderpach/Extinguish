@@ -250,10 +250,10 @@ class FloatingButtonWindow(
         Log.d(TAG, "onConfigurationChange")
         if (!mView.isAttachedToWindow) return
         intrinsicWindowSize = calculateIntrinsicWindowSize()
+        updateBoundaryRatio()
         positionBoundary = windowManager.calculateSafePositionBoundary(
             intrinsicWindowSize
         )
-        updateBoundaryRatio()
         positionBoundary.calculatePosition(
             boundaryRatio
         ).let { (x, y) ->
