@@ -378,28 +378,36 @@ class ExtinguishService : LifecycleService() {
                         floatingButtonHost?.create()
 
                         eventsProviderService?.let { service ->
-                            volumeKeyEventShizukuHost = VolumeKeyEventShizukuHost(
-                                this@ExtinguishService, service
+                            if (
+                                feature.enabledVolumeKeyEventControl.and(
+                                    feature.volumeKeyEventControlMethod == Shell
+                                )
                             ) {
-                                if (isScreenOn) {
-                                    updateHostState(false, feature)
-                                    turnScreenOff()
-                                } else {
-                                    updateHostState(true, feature)
-                                    turnScreenOn()
-                                }
-                            }.also { it.register() }
+                                volumeKeyEventShizukuHost = VolumeKeyEventShizukuHost(
+                                    this@ExtinguishService, service
+                                ) {
+                                    if (isScreenOn) {
+                                        updateHostState(false, feature)
+                                        turnScreenOff()
+                                    } else {
+                                        updateHostState(true, feature)
+                                        turnScreenOn()
+                                    }
+                                }.also { it.register() }
+                            }
 
-                            screenEventHost = ScreenEventHost(
-                                this@ExtinguishService, service
-                            ) {
-                                if (!isScreenOn) {
-                                    updateHostState(true, feature)
-                                    turnScreenOn()
+                            if (feature.enabledScreenEventControl) {
+                                screenEventHost = ScreenEventHost(
+                                    this@ExtinguishService, service
+                                ) {
+                                    if (!isScreenOn) {
+                                        updateHostState(true, feature)
+                                        turnScreenOn()
+                                    }
+                                }.also {
+                                    it.register()
+                                    if (isScreenOn) it.sleep()
                                 }
-                            }.also {
-                                it.register()
-                                if (isScreenOn) it.sleep()
                             }
 
                             service.launch("-F -e \": 0001 014a\" -e \": 0001 0072\" -e \": 0001 0073\"")
