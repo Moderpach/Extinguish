@@ -75,7 +75,7 @@ jobs:
           SIGNED_APP_NAME: app-release.aab
         working-directory: app/build/outputs/bundle/unsignedRelease
         run: |
-          jarsigner -keystore $KEY_STORE_FILE -storepass $KEYSTORE_PASS -keypass $KEY_PASS app-release.aab $KEY_ALIAS
+          jarsigner -keystore $KEY_STORE_FILE -storepass $KEYSTORE_PASS -keypass $KEY_PASS $UNSIGNED_APP_NAME $KEY_ALIAS
           mv $UNSIGNED_APP_NAME $SIGNED_APP_NAME
 
 
