@@ -45,12 +45,10 @@ android {
     productFlavors {
         create("debugSigned") {
             dimension = "sign"
-            versionNameSuffix = "-debugSigned"
             signingConfig = signingConfigs.getByName("debug")
         }
         create("unsigned") {
             dimension = "sign"
-            versionNameSuffix = "-unsigned"
             signingConfig = null
         }
     }
