@@ -40,6 +40,7 @@ jobs:
           mv cmdline-tools .android/sdk
           echo "ANDROID_SDK=${{ github.workspace }}/.android/sdk" >> "$GITHUB_ENV"
           echo "$ANDROID_SDK/cmdline-tools/bin" >> $GITHUB_PATH
+          echo "$PATH"
           yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK
           sdkmanager --install "build-tools;35.0.0"
           echo "$ANDROID_SDK/build-tools/35.0.0/bin" >> $GITHUB_PATH
