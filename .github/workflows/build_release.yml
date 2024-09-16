@@ -20,7 +20,7 @@ jobs:
       - name: Retrieve the secret and decode it to a file
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        working-directory: $HOME
+        working-directory: ${{ HOME }}
         run: |
           echo $KEYSTORE_BASE64 | base64 --decode > extinguish.jks
           echo "KEY_STORE_FILE=$HOME/extinguish.jks" >> $GITHUB_ENV
@@ -32,12 +32,12 @@ jobs:
           java-version: '17'
 
       - name: Setup android build tools #https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-        working-directory: $HOME/.android/sdk
+        working-directory: ${{ HOME }}/.android/sdk
         run: |
           sudo apt-get install -y curl unzip
           curl https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o commandline-tools.zip
           unzip commandline-tools.zip
-          echo "ANDROID_SDK=$HOME/.android/sdk" >> $GITHUB_ENV
+          echo "ANDROID_SDK=${{ HOME }}/.android/sdk" >> $GITHUB_ENV
           echo "$ANDROID_SDK/cmdline-tools/bin" >> $GITHUB_PATH
           yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK
           sdkmanager --install "build-tools;35.0.0"
