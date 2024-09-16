@@ -30,7 +30,7 @@ jobs:
           distribution: 'corretto' # See 'Supported distributions' for available options
           java-version: '17'
 
-      - name: Setup android build tools
+      - name: Setup android cmdline tools
         run: |
           sudo apt-get install -y curl unzip
           curl https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o commandline-tools.zip
@@ -41,6 +41,9 @@ jobs:
           echo "ANDROID_SDK=${{ github.workspace }}/.android/sdk" >> "$GITHUB_ENV"
           echo "$ANDROID_SDK/cmdline-tools/bin" >> $GITHUB_PATH
           echo "$PATH"
+
+      - name: Setup android build tools
+        run: |
           yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK
           sdkmanager --install "build-tools;35.0.0"
           echo "$ANDROID_SDK/build-tools/35.0.0/bin" >> $GITHUB_PATH
