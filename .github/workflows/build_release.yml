@@ -35,7 +35,7 @@ jobs:
           sudo apt-get install -y curl unzip
           curl https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o commandline-tools.zip
           unzip commandline-tools.zip
-          mv cmdline-tools ./.android/sdk/cmdline-tools
+          mv cmdline-tools .android/sdk/cmdline-tools
           echo "ANDROID_SDK=${{ github.workspace }}/.android/sdk" >> "$GITHUB_ENV"
           echo "$ANDROID_SDK/cmdline-tools/bin" >> $GITHUB_PATH
           yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK
