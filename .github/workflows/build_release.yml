@@ -39,14 +39,13 @@ jobs:
           mkdir .android/sdk
           mv cmdline-tools .android/sdk
           echo "ANDROID_SDK=${{ github.workspace }}/.android/sdk" >> "$GITHUB_ENV"
-          echo "$ANDROID_SDK/cmdline-tools/bin" >> $GITHUB_PATH
-          echo "$PATH"
+          echo "CMDLINE_TOOLS=$ANDROID_SDK/cmdline-tools/bin" >> "$GITHUB_ENV"
 
       - name: Setup android build tools
         run: |
-          yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK
-          sdkmanager --install "build-tools;35.0.0"
-          echo "$ANDROID_SDK/build-tools/35.0.0/bin" >> $GITHUB_PATH
+          yes | $CMDLINE_TOOLS/sdkmanager --licenses --sdk_root=$ANDROID_SDK
+          $CMDLINE_TOOLS/sdkmanager --install "build-tools;35.0.0"
+          echo "BUILD_TOOLS=$ANDROID_SDK/build-tools/35.0.0/bin" >> "$GITHUB_ENV"
 
       - name: Check apksigner
         run: apksigner --help
@@ -67,9 +66,9 @@ jobs:
           SIGNED_APP_NAME: app-release.apk
         working-directory: app/build/outputs/apk/unsigned/release
         run: |
-          zipalign -v -p 4 $UNSIGNED_APP_NAME $ALIGN_APP_NAME
-          apksigner sign --ks $KEY_STORE_FILE --ks-key-alias $KEY_ALIAS --ks-pass pass:$KEYSTORE_PASS --key-pass pass:$KEY_PASS --out $SIGNED_APP_NAME $ALIGN_APP_NAME
-          apksigner verify -v "$apk_path/app-release.apk"
+          $BUILD_TOOLS/zipalign -v -p 4 $UNSIGNED_APP_NAME $ALIGN_APP_NAME
+          $BUILD_TOOLS/apksigner sign --ks $KEY_STORE_FILE --ks-key-alias $KEY_ALIAS --ks-pass pass:$KEYSTORE_PASS --key-pass pass:$KEY_PASS --out $SIGNED_APP_NAME $ALIGN_APP_NAME
+          $BUILD_TOOLS/apksigner verify -v "$apk_path/app-release.apk"
 
       - name: Signing app bundle
         env:
