@@ -45,7 +45,7 @@ jobs:
         run: |
           yes | $CMDLINE_TOOLS/sdkmanager --licenses --sdk_root=$ANDROID_SDK
           $CMDLINE_TOOLS/sdkmanager --install "build-tools;35.0.0" --sdk_root=$ANDROID_SDK
-          echo "BUILD_TOOLS=$ANDROID_SDK/build-tools/35.0.0/bin" >> "$GITHUB_ENV"
+          echo "BUILD_TOOLS=$ANDROID_SDK/build-tools/35.0.0" >> "$GITHUB_ENV"
 
       - name: Build unsigned apk and app bundle
         run: |
