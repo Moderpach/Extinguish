@@ -1,6 +1,7 @@
 package extinguish.shizuku_service
 
 import android.os.Build
+import android.os.IBinder
 import android.util.Log
 import extinguish.hiddenAPI.server.display.DisplayControlProxy
 import extinguish.hiddenAPI.view.SurfaceControlProxy
@@ -36,26 +37,24 @@ class DisplayControlService : IDisplayControl.Stub() {
             }
         }
 
+    private fun getPrimaryPhysicalDisplayToken(): IBinder {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val primaryPhysicalDisplayId = DisplayControlProxy.getPhysicalDisplayIds()[0]
+            return DisplayControlProxy.getPhysicalDisplayToken(primaryPhysicalDisplayId)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return SurfaceControlProxy.getInternalDisplayToken()
+        }
+        return SurfaceControlProxy.getBuiltInDisplay()
+    }
+
     override fun setPowerModeToSurfaceControl(mode: Int): UnitResult {
         debugLog("#setPowerModeToSurfaceControl(mode = $mode)")
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                debugLog("setPowerModeToSurfaceControl: getting displayToken from DisplayControl")
-                val mainDisplayId = DisplayControlProxy.getPhysicalDisplayIds()[0]
-                debugLog("setPowerModeToSurfaceControl: mainDisplayId = $mainDisplayId")
-                with(DisplayControlProxy.getPhysicalDisplayToken(mainDisplayId)) {
-                    SurfaceControlProxy.setDisplayPowerMode(
-                        this, mode
-                    )
-                }
-            } else {
-                debugLog("setPowerModeToSurfaceControl: getting displayToken from SurfaceControl")
-                with(SurfaceControlProxy.getInternalDisplayToken()) {
-                    SurfaceControlProxy.setDisplayPowerMode(
-                        this, mode
-                    )
-                }
-            }
+            val displayToken = getPrimaryPhysicalDisplayToken()
+            SurfaceControlProxy.setDisplayPowerMode(
+                displayToken, mode
+            )
         } catch (e: Exception) {
             val massage = buildString {
                 append(e.stackTraceToString())
@@ -70,23 +69,10 @@ class DisplayControlService : IDisplayControl.Stub() {
     override fun setBrightnessToSurfaceControl(brightness: Float): UnitResult {
         debugLog("#setBrightnessToSurfaceControl(brightness = $brightness)")
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                debugLog("setBrightnessToSurfaceControl: getting displayToken from DisplayControl")
-                val mainDisplayId = DisplayControlProxy.getPhysicalDisplayIds()[0]
-                debugLog("setBrightnessToSurfaceControl: mainDisplayId = $mainDisplayId")
-                with(DisplayControlProxy.getPhysicalDisplayToken(mainDisplayId)) {
-                    SurfaceControlProxy.setDisplayBrightness(
-                        this, brightness
-                    )
-                }
-            } else {
-                debugLog("setBrightnessToSurfaceControl: getting displayToken from SurfaceControl")
-                with(SurfaceControlProxy.getInternalDisplayToken()) {
-                    SurfaceControlProxy.setDisplayBrightness(
-                        this, brightness
-                    )
-                }
-            }
+            val displayToken = getPrimaryPhysicalDisplayToken()
+            SurfaceControlProxy.setDisplayBrightness(
+                displayToken, brightness
+            )
         } catch (e: Exception) {
             val massage = buildString {
                 append(e.stackTraceToString())
