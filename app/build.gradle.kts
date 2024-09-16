@@ -39,7 +39,19 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+    flavorDimensions += "sign"
+    productFlavors {
+        create("debugSigned") {
+            dimension = "sign"
+            versionNameSuffix = "-debugSigned"
             signingConfig = signingConfigs.getByName("debug")
+        }
+        create("unsigned") {
+            dimension = "sign"
+            versionNameSuffix = "-unsigned"
+            signingConfig = null
         }
     }
     compileOptions {
