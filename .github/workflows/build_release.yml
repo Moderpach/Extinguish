@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Build Release
+name: Build release apk and app bundle
 
 # Controls when the workflow will run
 on: workflow_dispatch
@@ -20,12 +20,10 @@ jobs:
       - name: Retrieve the secret and decode it to a file
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASS: ${{ secrets.KEY_PASS }}
+        working-directory: $HOME
         run: |
           echo $KEYSTORE_BASE64 | base64 --decode > extinguish.jks
-          ls
+          echo "KEY_STORE_FILE=$HOME/extinguish.jks" >> $GITHUB_ENV
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -33,31 +31,58 @@ jobs:
           distribution: 'corretto' # See 'Supported distributions' for available options
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build Project
+      - name: Setup android build tools #https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+        working-directory: $HOME/.android/sdk
         run: |
-          ./gradlew assembleRelease
+          sudo apt-get install -y curl unzip
+          curl https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o commandline-tools.zip
+          unzip commandline-tools.zip
+          echo "ANDROID_SDK=$HOME/.android/sdk" >> $GITHUB_ENV
+          echo "$ANDROID_SDK/cmdline-tools/bin" >> $GITHUB_PATH
+          yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK
+          sdkmanager --install "build-tools;35.0.0"
+          echo "$ANDROID_SDK/build-tools/35.0.0/bin" >> $GITHUB_PATH
 
-      - name: Signing
+      - name: Check apksigner
+        run: apksigner --help
+
+      - name: Build unsigned apk and app bundle
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleUnsignedRelease
+          ./gradlew :app:bundleUnsignedRelease
+
+      - name: Signing apk
         env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASS: ${{ secrets.KEY_PASS }}
+          UNSIGNED_APP_NAME: app-unsigned-release-unsigned.apk
+          ALIGN_APP_NAME: app-release-aligned.apk
+          SIGNED_APP_NAME: app-release.apk
+        working-directory: ./app/build/outputs/apk/unsigned/release
         run: |
-          apk_path="./app/build/outputs/apk/release"
-          build_tools_path="$ANDROID_SDK_ROOT/build-tools/35.0.0"
-          $build_tools_path/zipalign -v -p 4 "$apk_path/app-release.apk" "$apk_path/app-release-aligned.apk"
-          $build_tools_path/apksigner sign --ks "./extinguish.jks" --ks-key-alias $KEY_ALIAS --ks-pass pass:$KEYSTORE_PASS --key-pass pass:$KEY_PASS --out "$apk_path/app-release.apk" "$apk_path/app-release-aligned.apk"
-          $build_tools_path/apksigner verify -v "$apk_path/app-release.apk"
-      
+          zipalign -v -p 4 $UNSIGNED_APP_NAME $ALIGN_APP_NAME
+          apksigner sign --ks $KEY_STORE_FILE --ks-key-alias $KEY_ALIAS --ks-pass pass:$KEYSTORE_PASS --key-pass pass:$KEY_PASS --out $SIGNED_APP_NAME $ALIGN_APP_NAME
+          apksigner verify -v "$apk_path/app-release.apk"
+
+      - name: Signing app bundle
+        env:
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASS }}
+          UNSIGNED_APP_NAME: app-unsigned-release.aab
+          SIGNED_APP_NAME: app-release.aab
+        working-directory: ./app/build/outputs/bundle/unsignedRelease
+        run: |
+          jarsigner -keystore $KEY_STORE_FILE -storepass $KEYSTORE_PASS -keypass $KEY_PASS app-release.aab $KEY_ALIAS
+          mv $UNSIGNED_APP_NAME $SIGNED_APP_NAME
+
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: app/build/outputs/apk/release/app-release.apk
+          path: |
+            app/build/outputs/apk/unsigned/release/app-release.apk
+            app/build/outputs/bundle/unsignedRelease/app-release.aab
