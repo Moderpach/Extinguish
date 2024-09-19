@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "extinguish.shizuku_service"
-    compileSdk = 34
+    compileSdk = 35
 
     buildFeatures {
         buildConfig = true
