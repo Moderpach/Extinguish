@@ -5,7 +5,7 @@ import android.os.IBinder
 import android.util.Log
 import extinguish.hiddenAPI.server.display.DisplayControlProxy
 import extinguish.hiddenAPI.view.SurfaceControlProxy
-import extinguish.shizuku_service.result.UnitResult
+import extinguish.ipc.result.UnitResult
 import kotlin.system.exitProcess
 
 class DisplayControlService : IDisplayControl.Stub() {
@@ -13,18 +13,11 @@ class DisplayControlService : IDisplayControl.Stub() {
 
         const val TAG = "DisplayControlService"
 
-        private fun debugLog(msg: String) {
-            if (BuildConfig.DEBUG) Log.d(TAG, msg)
-        }
-
         const val POWER_MODE_OFF = SurfaceControlProxy.POWER_MODE_OFF
         const val POWER_MODE_NORMAL = SurfaceControlProxy.POWER_MODE_NORMAL
 
         const val BRIGHTNESS_MODE_MANUAL = 0
         const val BRIGHTNESS_MODE_AUTO = 1
-
-        const val ERR_ILLEGAL_PARAMETER = 1
-        const val ERR_FROM_HIDDEN_API = 2
     }
 
     private val shLock = Object()
@@ -49,43 +42,30 @@ class DisplayControlService : IDisplayControl.Stub() {
     }
 
     override fun setPowerModeToSurfaceControl(mode: Int): UnitResult {
-        debugLog("#setPowerModeToSurfaceControl(mode = $mode)")
         try {
             val displayToken = getPrimaryPhysicalDisplayToken()
             SurfaceControlProxy.setDisplayPowerMode(
                 displayToken, mode
             )
         } catch (e: Exception) {
-            val massage = buildString {
-                append(e.stackTraceToString())
-                append("---")
-                append(e.cause?.stackTraceToString())
-            }
-            return UnitResult.Err(ERR_FROM_HIDDEN_API, massage)
+            return UnitResult.Err(e)
         }
         return UnitResult.Ok()
     }
 
     override fun setBrightnessToSurfaceControl(brightness: Float): UnitResult {
-        debugLog("#setBrightnessToSurfaceControl(brightness = $brightness)")
         try {
             val displayToken = getPrimaryPhysicalDisplayToken()
             SurfaceControlProxy.setDisplayBrightness(
                 displayToken, brightness
             )
         } catch (e: Exception) {
-            val massage = buildString {
-                append(e.stackTraceToString())
-                append("---")
-                append(e.cause?.stackTraceToString())
-            }
-            return UnitResult.Err(ERR_FROM_HIDDEN_API, massage)
+            return UnitResult.Err(e)
         }
         return UnitResult.Ok()
     }
 
     override fun setBrightnessToSetting(brightness: Int): UnitResult {
-        debugLog("#setBrightnessToSetting(brightness = $brightness)")
         val output = shProcess.outputStream
         synchronized(shLock) {
             output.write("settings put system screen_brightness $brightness\n".toByteArray())
@@ -95,27 +75,21 @@ class DisplayControlService : IDisplayControl.Stub() {
     }
 
     override fun setBrightnessModeToSetting(mode: Int): UnitResult {
-        debugLog("#setBrightnessModeToSetting(mode = $mode)")
+        if (mode != BRIGHTNESS_MODE_MANUAL && mode != BRIGHTNESS_MODE_AUTO) {
+            return UnitResult.Err(
+                IllegalArgumentException("mode should be 0 or 1")
+            )
+        }
         val output = shProcess.outputStream
         synchronized(shLock) {
-            when (mode) {
-                BRIGHTNESS_MODE_MANUAL, BRIGHTNESS_MODE_AUTO -> {
-                    output.write("settings put system screen_brightness_mode $mode\n".toByteArray())
-                    output.flush()
-                }
-
-                else -> return UnitResult.Err(
-                    ERR_ILLEGAL_PARAMETER,
-                    "`mode` should be DisplayControlService#BRIGHTNESS_MODE_MANUAL " +
-                            "or DisplayControlService#BRIGHTNESS_MODE_AUTO"
-                )
-            }
+            output.write("settings put system screen_brightness_mode $mode\n".toByteArray())
+            output.flush()
         }
         return UnitResult.Ok()
     }
 
     override fun destroy() {
-        debugLog("#destroy()")
+        Log.d(TAG, "destroy: $TAG")
         synchronized(shLock) {
             _shProcess?.destroy()
             _shProcess = null

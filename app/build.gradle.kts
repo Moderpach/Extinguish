@@ -155,5 +155,6 @@ dependencies {
     //other module
     implementation(project(":hidden-api"))
     implementation(project(":shizuku-service"))
+    implementation(project(":ipc"))
 
 }

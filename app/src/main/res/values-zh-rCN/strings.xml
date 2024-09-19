@@ -102,8 +102,10 @@
     <string name="Hide_floating_button">隐藏悬浮按钮</string>
     <string name="Expected_screen_state">期望屏幕状态</string>
     <string name="Copy_logs">复制日志</string>
-    <string name="Runtime_exception_detected">检测到运行异常</string>
-    <string name="str_exc_methodNotFound">访问系统功能失败。该解决方案可能与该设备不兼容</string>
-    <string name="str_exc_readBrightnessSettingFailed">读取亮度设置失败。如果你的设备支持设置亮度或亮度模式，手动设置亮度或亮度模式（自动亮度）可能可以解决问题。</string>
-    <string name="str_exc_shizukuFailed">Extinguish 未能连接到 Shizuku。这可能是一个Bug，也可能是 Shizuku 未在正常工作。</string>
+    <string name="str_ExceptionWhenInvokeSystemFunction_name">调用系统功能时异常</string>
+    <string name="str_ExceptionWhenInvokeSystemFunction_description">您的设备可能不支持该方案，该异常也有可能是 Bug 造成的。</string>
+    <string name="str_ExceptionWhenAccessShizukuRemote_name">访问 Shizuku 远端时异常</string>
+    <string name="str_ExceptionWhenAccessShizukuRemote_description">Shizuku 工作不稳定。这也可能时 Bug 造成的。</string>
+    <string name="str_SystemUnsupportedBrightnessSettings_name">您的设备不支持亮度设置</string>
+    <string name="str_SystemUnsupportedBrightnessSettings_description">如果您的设备实际支持亮度和自动亮度设置，尝试切换它们可能可以解决问题。</string>
 </resources>

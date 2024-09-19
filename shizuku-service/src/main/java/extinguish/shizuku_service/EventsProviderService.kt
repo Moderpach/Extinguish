@@ -2,7 +2,7 @@ package extinguish.shizuku_service
 
 import android.os.RemoteCallbackList
 import android.util.Log
-import extinguish.shizuku_service.result.EventResult
+import extinguish.ipc.result.EventResult
 import kotlin.system.exitProcess
 
 class EventsProviderService : IEventsProvider.Stub() {

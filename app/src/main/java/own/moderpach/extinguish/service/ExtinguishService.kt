@@ -17,7 +17,6 @@ import extinguish.shizuku_service.DisplayControlService
 import extinguish.shizuku_service.EventsProviderService
 import extinguish.shizuku_service.IDisplayControl
 import extinguish.shizuku_service.IEventsProvider
-import extinguish.shizuku_service.result.UnitResult
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +25,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import own.moderpach.extinguish.BuildConfig
-import own.moderpach.extinguish.ExceptionMassages
+import own.moderpach.extinguish.ExceptionScenes
 import own.moderpach.extinguish.notifyException
 import own.moderpach.extinguish.service.hosts.AwakeHost
 import own.moderpach.extinguish.service.hosts.FloatingButtonHost
@@ -425,7 +424,10 @@ class ExtinguishService : LifecycleService() {
 
                         state.update { State.Prepared }
                     } else {
-                        notifyException(ExceptionMassages.ShizukuFailed, null)
+                        notifyException(
+                            ExceptionScenes.ExceptionWhenAccessShizukuRemote,
+                            "binding shizuku remote service timeout"
+                        )
                         state.update { State.Error }
                     }
                 }
@@ -460,10 +462,14 @@ class ExtinguishService : LifecycleService() {
         volumeKeyEventShizukuHost?.unregister()
         screenEventHost?.unregister()
 
-        eventsProviderService?.stop()
+        eventsProviderService?.let {
+            it.stop()
+            unbindEventsProviderService()
+        }
 
-        if (eventsProviderService != null) unbindEventsProviderService()
-        if (displayControlService != null) unbindDisplayControlService()
+        displayControlService?.let {
+            unbindDisplayControlService()
+        }
 
         super.onDestroy()
         state.update { State.Destroyed }
@@ -537,7 +543,10 @@ class ExtinguishService : LifecycleService() {
             if (service != null && binder.pingBinder()) {
                 displayControlService = IDisplayControl.Stub.asInterface(service)
             } else {
-                notifyException(ExceptionMassages.ShizukuFailed, null)
+                notifyException(
+                    ExceptionScenes.ExceptionWhenAccessShizukuRemote,
+                    "get a null DisplayControlService connect or binder dead"
+                )
             }
         }
 
@@ -554,7 +563,7 @@ class ExtinguishService : LifecycleService() {
                 displayControlServiceConnection
             )
         } catch (e: Exception) {
-            notifyException(ExceptionMassages.ShizukuFailed, e.message)
+            notifyException(ExceptionScenes.ExceptionWhenAccessShizukuRemote, e)
         }
     }
 
@@ -566,7 +575,7 @@ class ExtinguishService : LifecycleService() {
                 true
             )
         } catch (e: Exception) {
-            notifyException(ExceptionMassages.ShizukuFailed, e.message)
+            notifyException(ExceptionScenes.ExceptionWhenAccessShizukuRemote, e)
         }
     }
 
@@ -588,6 +597,11 @@ class ExtinguishService : LifecycleService() {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service != null && binder.pingBinder()) {
                 eventsProviderService = IEventsProvider.Stub.asInterface(service)
+            } else {
+                notifyException(
+                    ExceptionScenes.ExceptionWhenAccessShizukuRemote,
+                    "get a null DisplayControlService connect or binder dead"
+                )
             }
         }
 
@@ -598,18 +612,26 @@ class ExtinguishService : LifecycleService() {
     }
 
     fun bindEventsProviderService() {
-        Shizuku.bindUserService(
-            eventsProviderServiceArgs,
-            eventsProviderServiceConnection
-        )
+        try {
+            Shizuku.bindUserService(
+                eventsProviderServiceArgs,
+                eventsProviderServiceConnection
+            )
+        } catch (e: Exception) {
+            notifyException(ExceptionScenes.ExceptionWhenAccessShizukuRemote, e)
+        }
     }
 
     fun unbindEventsProviderService() {
-        Shizuku.unbindUserService(
-            eventsProviderServiceArgs,
-            eventsProviderServiceConnection,
-            true
-        )
+        try {
+            Shizuku.unbindUserService(
+                eventsProviderServiceArgs,
+                eventsProviderServiceConnection,
+                true
+            )
+        } catch (e: Exception) {
+            notifyException(ExceptionScenes.ExceptionWhenAccessShizukuRemote, e)
+        }
     }
 
     //== Screen state
@@ -627,24 +649,31 @@ class ExtinguishService : LifecycleService() {
         try {
             when (feature.solution) {
                 ShizukuPowerOffScreen -> {
-                    displayControlService?.setPowerModeToSurfaceControl(DisplayControlService.POWER_MODE_NORMAL)
-                        .let {
-                            if (it is UnitResult.Err) {
-                                notifyException(ExceptionMassages.MethodNotFound, it.message)
-                            }
-                        }
+                    displayControlService?.setPowerModeToSurfaceControl(
+                        DisplayControlService.POWER_MODE_NORMAL
+                    )?.withResult { name, detail ->
+                        notifyException(
+                            ExceptionScenes.ExceptionWhenInvokeSystemFunction,
+                            name,
+                            detail
+                        )
+                    }
                 }
 
                 ShizukuScreenBrightnessNeg1 -> {
-                    displayControlService?.setBrightnessToSurfaceControl(0f).let {
-                        if (it is UnitResult.Err) {
-                            notifyException(ExceptionMassages.MethodNotFound, it.message)
-                        }
+                    displayControlService?.setBrightnessToSurfaceControl(
+                        0f
+                    )?.withResult { name, detail ->
+                        notifyException(
+                            ExceptionScenes.ExceptionWhenInvokeSystemFunction,
+                            name,
+                            detail
+                        )
                     }
                 }
             }
         } catch (e: Exception) {
-            notifyException(ExceptionMassages.ShizukuFailed, e.message)
+            notifyException(ExceptionScenes.ExceptionWhenAccessShizukuRemote, e)
         }
         lifecycleScope.launch {
             try {
@@ -654,57 +683,74 @@ class ExtinguishService : LifecycleService() {
                 delay(25)
                 displayControlService?.setBrightnessToSetting(recordBrightness)
 
+            } catch (e: Exception) {
+                notifyException(ExceptionScenes.ExceptionWhenAccessShizukuRemote, e)
+            }
+            try {
                 if (feature.brightnessManualWhenScreenOff) {
                     displayControlService?.setBrightnessModeToSetting(recordBrightnessMode)
                 }
             } catch (e: Exception) {
-                notifyException(ExceptionMassages.ShizukuFailed, e.message)
+                notifyException(ExceptionScenes.ExceptionWhenAccessShizukuRemote, e)
             }
         }
     }
 
     fun turnScreenOff() {
         screenState.update { ScreenState.Off }
-        try {
-            recordBrightness = Settings.System.getInt(
+        recordBrightness = try {
+            Settings.System.getInt(
                 contentResolver,
                 Settings.System.SCREEN_BRIGHTNESS
             )
-            if (feature.brightnessManualWhenScreenOff) {
-                recordBrightnessMode = Settings.System.getInt(
+        } catch (e: Exception) {
+            notifyException(ExceptionScenes.SystemUnsupportedBrightnessSettings, e)
+            128
+        }
+        if (feature.brightnessManualWhenScreenOff) {
+            recordBrightnessMode = try {
+                Settings.System.getInt(
                     contentResolver,
                     Settings.System.SCREEN_BRIGHTNESS_MODE
                 )
-                try {
-                    displayControlService?.setBrightnessModeToSetting(Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL)
-                } catch (e: Exception) {
-                    notifyException(ExceptionMassages.ShizukuFailed, e.message)
-                }
+            } catch (e: Exception) {
+                notifyException(ExceptionScenes.SystemUnsupportedBrightnessSettings, e)
+                Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
             }
+        }
+        try {
+            displayControlService?.setBrightnessModeToSetting(Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL)
         } catch (e: Exception) {
-            notifyException(ExceptionMassages.ReadBrightnessSettingFailed, e.message)
+            notifyException(ExceptionScenes.ExceptionWhenAccessShizukuRemote, e)
         }
         try {
             when (feature.solution) {
                 ShizukuPowerOffScreen -> {
-                    displayControlService?.setPowerModeToSurfaceControl(DisplayControlService.POWER_MODE_OFF)
-                        .let {
-                            if (it is UnitResult.Err) {
-                                notifyException(ExceptionMassages.MethodNotFound, it.message)
-                            }
-                        }
+                    displayControlService?.setPowerModeToSurfaceControl(
+                        DisplayControlService.POWER_MODE_OFF
+                    )?.withResult { name, detail ->
+                        notifyException(
+                            ExceptionScenes.ExceptionWhenInvokeSystemFunction,
+                            name,
+                            detail
+                        )
+                    }
                 }
 
                 ShizukuScreenBrightnessNeg1 -> {
-                    displayControlService?.setBrightnessToSurfaceControl(-1f).let {
-                        if (it is UnitResult.Err) {
-                            notifyException(ExceptionMassages.MethodNotFound, it.message)
-                        }
+                    displayControlService?.setBrightnessToSurfaceControl(
+                        -1f
+                    )?.withResult { name, detail ->
+                        notifyException(
+                            ExceptionScenes.ExceptionWhenInvokeSystemFunction,
+                            name,
+                            detail
+                        )
                     }
                 }
             }
         } catch (e: Exception) {
-            notifyException(ExceptionMassages.ShizukuFailed, e.message)
+            notifyException(ExceptionScenes.ExceptionWhenAccessShizukuRemote, e)
         }
     }
 

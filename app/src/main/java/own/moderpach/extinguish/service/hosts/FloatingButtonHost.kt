@@ -123,5 +123,8 @@ class FloatingButtonHost<T>(
         floatingButtonWindow?.destroy()
         isShowing = false
         floatingButtonWindow = null
+        if (timerSetterPopupWindow == null) return
+        timerSetterPopupWindow?.destroy()
+        timerSetterPopupWindow = null
     }
 }

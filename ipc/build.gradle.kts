@@ -1,12 +1,11 @@
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
-    //alias(libs.plugins.parcelize)
     id(libs.plugins.parcelize.get().pluginId)
 }
 
 android {
-    namespace = "extinguish.shizuku_service"
+    namespace = "extinguish.ipc"
     compileSdk = 35
 
     buildFeatures {
@@ -15,7 +14,7 @@ android {
     }
 
     defaultConfig {
-        minSdk = 26
+        minSdk = 24
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -43,11 +42,7 @@ dependencies {
 
     implementation(libs.core.ktx)
     implementation(libs.appcompat)
-    implementation(libs.material)
-    implementation(project(":hidden-api"))
-    implementation(project(":ipc"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
-
 }

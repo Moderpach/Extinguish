@@ -1,4 +1,4 @@
-package extinguish.shizuku_service.result
+package extinguish.ipc.result
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

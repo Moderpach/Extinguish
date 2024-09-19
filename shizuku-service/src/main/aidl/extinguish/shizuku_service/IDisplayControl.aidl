@@ -1,7 +1,7 @@
 // IDisplayControl.aidl
 package extinguish.shizuku_service;
 
-import extinguish.shizuku_service.result.UnitResult;
+import extinguish.ipc.result.UnitResult;
 
 // Declare any non-default types here with import statements
 

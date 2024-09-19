@@ -106,9 +106,11 @@
     <string name="Hide_floating_button">Hide floating button</string>
     <string name="Expected_screen_state">Expected screen state</string>
     <string name="Copy_logs">Copy logs</string>
-    <string name="Runtime_exception_detected">Runtime exception detected</string>
-    <string name="str_exc_methodNotFound">Failed to access the system function. This solution may not be compatible with this device.</string>
-    <string name="str_exc_readBrightnessSettingFailed">Fail to read brightness setting. If your device supports setting brightness or brightness mode, manual setting brightness or brightness mode(auto brightness) may solve the problem.</string>
-    <string name="str_exc_shizukuFailed">Extinguish failed to connect to Shizuku. This could be a bug, or Shizuku might not be working properly.</string>
+    <string name="str_ExceptionWhenInvokeSystemFunction_name">Exception when Invoking system function</string>
+    <string name="str_ExceptionWhenInvokeSystemFunction_description">This solution maybe not support your device, or this exception just causes by a bug.</string>
+    <string name="str_ExceptionWhenAccessShizukuRemote_name">Exception when access shizuku remote</string>
+    <string name="str_ExceptionWhenAccessShizukuRemote_description">Unstable running of shizuku, or just caused by a bug.</string>
+    <string name="str_SystemUnsupportedBrightnessSettings_name">Brightness settings is unsupported in your device</string>
+    <string name="str_SystemUnsupportedBrightnessSettings_description">If your device actually support setting brightness or brightness mode, you can try to switch these settings may solve the problem.</string>
 
 </resources>
