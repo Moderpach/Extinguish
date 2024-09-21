@@ -18,8 +18,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraphBuilder
 import own.moderpach.extinguish.ExtinguishNavGraph
 import own.moderpach.extinguish.ExtinguishNavRoute
-import own.moderpach.extinguish.ISolutionsStateManager
-import own.moderpach.extinguish.ISystemPermissionsManager
 import own.moderpach.extinguish.R
 import own.moderpach.extinguish.settings.components.EnablerCard
 import own.moderpach.extinguish.settings.components.SettingCard
@@ -28,8 +26,6 @@ import own.moderpach.extinguish.settings.components.SettingListItemWithSlider
 import own.moderpach.extinguish.settings.components.SettingListItemWithSwitch
 import own.moderpach.extinguish.settings.data.ISettingsRepository
 import own.moderpach.extinguish.settings.test.FakeSettingsRepository
-import own.moderpach.extinguish.test.FakeSolutionStateManager
-import own.moderpach.extinguish.test.FakeSystemPermissionsManager
 import own.moderpach.extinguish.ui.components.ExtinguishTopAppBarWithNavigationBack
 import own.moderpach.extinguish.ui.navigation.extinguishComposable
 import own.moderpach.extinguish.ui.theme.ExtinguishTheme
@@ -38,8 +34,6 @@ val ExtinguishNavGraph.FloatingButton: ExtinguishNavRoute get() = "FloatingButto
 
 fun NavGraphBuilder.floatingButton(
     onBack: () -> Unit,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) = extinguishComposable(
@@ -47,8 +41,6 @@ fun NavGraphBuilder.floatingButton(
 ) {
     FloatingButtonScreen(
         onBack,
-        solutionsStateManager,
-        systemPermissionsManager,
         settingsRepository,
         onNavigateTo
     )
@@ -58,8 +50,6 @@ fun NavGraphBuilder.floatingButton(
 @Composable
 fun FloatingButtonScreen(
     onBack: () -> Unit,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) {
@@ -167,8 +157,6 @@ private fun FloatingButtonScreenPreview() = ExtinguishTheme {
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
         FloatingButtonScreen(
             onBack = {},
-            solutionsStateManager = FakeSolutionStateManager(),
-            systemPermissionsManager = FakeSystemPermissionsManager(),
             settingsRepository = FakeSettingsRepository()
         ) { }
     }

@@ -1,88 +1,66 @@
 package own.moderpach.extinguish
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.provider.Settings
-import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
+
 class SystemPermissionsManager(
-    private val context: ComponentActivity
+    private val context: Context,
 ) : ISystemPermissionsManager {
 
     //manage system normal permissions
-    private val actionsOnGranted: HashMap<String, () -> Unit> = hashMapOf()
-    private val requestNormalPermissionLauncher = context.registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        permissions.entries.forEach {
-            if (it.value) actionsOnGranted[it.key]?.let { action -> action() }
-        }
-    }
-
-
-    override fun requestPermission(
-        permission: String,
+    override fun request(
+        permission: Permission,
         onRequestPermissionRationale: () -> Unit,
-        actionOnGranted: () -> Unit
+        launcher: ActivityResultLauncher<String>,
+        activity: Activity
     ) {
-        actionsOnGranted[permission] = actionOnGranted
-        when {
+        if (
             ContextCompat.checkSelfPermission(
-                context,
+                activity,
                 android.Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                // You can use the API that requires the permission.
-            }
-
-            ActivityCompat.shouldShowRequestPermissionRationale(
-                context, permission
-            ) -> {
-                // In an educational UI, explain to the user why your app requires this
-                // permission for a specific feature to behave as expected, and what
-                // features are disabled if it's declined. In this UI, include a
-                // "cancel" or "no thanks" button that lets the user continue
-                // using your app without granting the permission.
-                onRequestPermissionRationale()
-            }
-
-            else -> {
-                // You can directly ask for the permission.
-                // The registered ActivityResultCallback gets the result of this request.
-
-                requestNormalPermissionLauncher.launch(arrayOf(permission))
-            }
+            ) == PackageManager.PERMISSION_GRANTED
+        ) return
+        if (ActivityCompat.shouldShowRequestPermissionRationale(
+                activity,
+                permission.permissionName
+            )
+        ) {
+            onRequestPermissionRationale()
+            return
         }
-
+        launcher.launch(permission.permissionName)
     }
 
-    @get:RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    override val isPostNotificationGranted
-        get() = context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
-                PackageManager.PERMISSION_GRANTED
-
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    override fun requestPostNotification() {
-        requestPermission(
-            android.Manifest.permission.POST_NOTIFICATIONS,
-            {}
-        ) {}
+    override fun check(permission: Permission): Boolean {
+        return context.checkSelfPermission(
+            permission.permissionName
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     //manage system special permissions
 
-    override val isDisplayOnOtherAppsGranted
-        get() = Settings.canDrawOverlays(context)
+    override fun requestSpecial(permission: SpecificPermission) {
+        if (checkSpecial(permission)) return
+        when (permission) {
+            SpecificPermission.CanDrawOverlays -> {
+                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                if (intent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(intent)
+                }
+            }
+        }
+    }
 
-    override fun requestDisplayOnOtherApps() {
-        with(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)) {
-            context.startActivity(this)
+    override fun checkSpecial(permission: SpecificPermission): Boolean {
+        return when (permission) {
+            SpecificPermission.CanDrawOverlays -> Settings.canDrawOverlays(context)
         }
     }
 }

@@ -39,8 +39,6 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import own.moderpach.extinguish.ExtinguishNavGraph
 import own.moderpach.extinguish.ExtinguishNavRoute
-import own.moderpach.extinguish.ISolutionsStateManager
-import own.moderpach.extinguish.ISystemPermissionsManager
 import own.moderpach.extinguish.R
 import own.moderpach.extinguish.home.HomeScreenCardKey
 import own.moderpach.extinguish.home.HomeScreenCardKeys
@@ -51,15 +49,12 @@ import own.moderpach.extinguish.settings.data.SettingsTokens
 import own.moderpach.extinguish.ui.components.ExtinguishButtonToken
 import own.moderpach.extinguish.ui.components.ExtinguishCard
 import own.moderpach.extinguish.ui.components.ExtinguishOutlinedButton
-import own.moderpach.extinguish.ui.components.ExtinguishOutlinedIconButton
 import own.moderpach.extinguish.ui.theme.ExtinguishTheme
 
 val HomeScreenCardKeys.solution: HomeScreenCardKey get() = "Solution"
 
 fun LazyStaggeredGridScope.solutionCard(
     extinguishServiceState: ExtinguishService.State,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit,
     onRequestService: () -> Unit
@@ -68,8 +63,6 @@ fun LazyStaggeredGridScope.solutionCard(
 ) {
     SolutionCard(
         extinguishServiceState,
-        solutionsStateManager,
-        systemPermissionsManager,
         settingsRepository,
         onNavigateTo,
         onRequestService
@@ -79,8 +72,6 @@ fun LazyStaggeredGridScope.solutionCard(
 @Composable
 fun SolutionCard(
     extinguishServiceState: ExtinguishService.State,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit,
     onRequestService: () -> Unit

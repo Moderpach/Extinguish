@@ -1,7 +1,5 @@
 package own.moderpach.extinguish.guide
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,45 +24,50 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import own.moderpach.extinguish.ExtinguishNavGraph
 import own.moderpach.extinguish.ExtinguishNavRoute
-import own.moderpach.extinguish.ISolutionsStateManager
+import own.moderpach.extinguish.LocalSolutionDependencyManager
+import own.moderpach.extinguish.LocalSystemPermissionsManager
 import own.moderpach.extinguish.R
 import own.moderpach.extinguish.settings.data.ISettingsRepository
 import own.moderpach.extinguish.settings.test.FakeSettingsRepository
-import own.moderpach.extinguish.test.FakeSolutionStateManager
+import own.moderpach.extinguish.test.FakeSolutionDependencyManager
+import own.moderpach.extinguish.test.FakeSystemPermissionsManager
 import own.moderpach.extinguish.ui.navigation.extinguishComposable
+import own.moderpach.extinguish.ui.navigation.openShizuku
+import own.moderpach.extinguish.ui.navigation.openUrlInBrowser
 import own.moderpach.extinguish.util.add
 
 val ExtinguishNavGraph.GuideShizukuRunning: ExtinguishNavRoute get() = "GuideShizukuRunning"
 
 fun NavGraphBuilder.guideShizukuRunning(
-    solutionsStateManager: ISolutionsStateManager,
     settingsRepository: ISettingsRepository,
     reselectSolution: () -> Unit,
     onNext: () -> Unit,
 ) = extinguishComposable(
     ExtinguishNavGraph.GuideShizukuRunning,
 ) {
-    GuideShizukuRunningScreen(solutionsStateManager, settingsRepository, reselectSolution, onNext)
+    GuideShizukuRunningScreen(settingsRepository, reselectSolution, onNext)
 }
 
 @Composable
 fun GuideShizukuRunningScreen(
-    solutionsStateManager: ISolutionsStateManager,
     settingsRepository: ISettingsRepository,
     reselectSolution: () -> Unit,
     onNext: () -> Unit,
 ) {
     val context = LocalContext.current
+    val solutionState by LocalSolutionDependencyManager.current.state.collectAsStateWithLifecycle()
 
     Scaffold(
         contentWindowInsets = ScaffoldDefaults.contentWindowInsets.union(WindowInsets.displayCutout),
@@ -96,7 +99,7 @@ fun GuideShizukuRunningScreen(
         floatingActionButton = {
             Button(
                 onClick = onNext,
-                enabled = solutionsStateManager.state.collectAsState().value.isShizukuRunning
+                enabled = solutionState.isShizukuBinderAlive
             ) {
                 Text(stringResource(R.string.Complete))
             }
@@ -120,10 +123,7 @@ fun GuideShizukuRunningScreen(
             }
             item {
                 Button(onClick = {
-                    Intent(Intent.ACTION_VIEW).apply {
-                        setData(Uri.parse("https://shizuku.rikka.app/introduction/"))
-                        context.startActivity(this)
-                    }
+                    context.openUrlInBrowser("https://shizuku.rikka.app/introduction/")
                 }) {
                     Text(stringResource(R.string.Learn_more_about_Shizuku))
                     Icon(painterResource(R.drawable.open_in_new_20px), null)
@@ -131,10 +131,7 @@ fun GuideShizukuRunningScreen(
             }
             item {
                 Button(onClick = {
-                    Intent(Intent.ACTION_VIEW).apply {
-                        setData(Uri.parse("https://shizuku.rikka.app/download/"))
-                        context.startActivity(this)
-                    }
+                    context.openUrlInBrowser("https://shizuku.rikka.app/download/")
                 }) {
                     Text(stringResource(R.string.Download_Shizuku))
                     Icon(painterResource(R.drawable.open_in_new_20px), null)
@@ -142,10 +139,7 @@ fun GuideShizukuRunningScreen(
             }
             item {
                 Button(onClick = {
-                    Intent(Intent.ACTION_VIEW).apply {
-                        setData(Uri.parse("https://shizuku.rikka.app/guide/setup/"))
-                        context.startActivity(this)
-                    }
+                    context.openUrlInBrowser("https://shizuku.rikka.app/guide/setup/")
                 }) {
                     Text(stringResource(R.string.User_manual_of_Shizuku))
                     Icon(painterResource(R.drawable.open_in_new_20px), null)
@@ -153,14 +147,7 @@ fun GuideShizukuRunningScreen(
             }
             item {
                 Button(onClick = {
-                    Intent().apply {
-                        setClassName(
-                            "moe.shizuku.privileged.api",
-                            "moe.shizuku.manager.MainActivity"
-                        )
-                        setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(this)
-                    }
+                    context.openShizuku()
                 }) {
                     Text(stringResource(R.string.Open_Shizuku))
                     Icon(painterResource(R.drawable.open_in_new_20px), null)
@@ -176,12 +163,16 @@ fun GuideShizukuRunningScreen(
 @Preview
 @Composable
 private fun GuideShizukuRunningScreenPreview() = MaterialTheme {
-    Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
-        GuideShizukuRunningScreen(
-            FakeSolutionStateManager(),
-            FakeSettingsRepository(),
-            reselectSolution = {},
-            onNext = {}
-        )
+    CompositionLocalProvider(
+        LocalSolutionDependencyManager provides FakeSolutionDependencyManager(),
+        LocalSystemPermissionsManager provides FakeSystemPermissionsManager()
+    ) {
+        Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
+            GuideShizukuRunningScreen(
+                FakeSettingsRepository(),
+                reselectSolution = {},
+                onNext = {}
+            )
+        }
     }
 }

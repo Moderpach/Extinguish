@@ -26,6 +26,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import own.moderpach.extinguish.BuildConfig
 import own.moderpach.extinguish.ExceptionScenes
+import own.moderpach.extinguish.ISolutionDependencyManager
+import own.moderpach.extinguish.ISystemPermissionsManager
+import own.moderpach.extinguish.SolutionDependencyManager
+import own.moderpach.extinguish.SpecificPermission
+import own.moderpach.extinguish.SystemPermissionsManager
 import own.moderpach.extinguish.notifyException
 import own.moderpach.extinguish.service.hosts.AwakeHost
 import own.moderpach.extinguish.service.hosts.FloatingButtonHost
@@ -81,6 +86,9 @@ class ExtinguishService : LifecycleService() {
 
     //todo: password support
     //lateinit var internalPassword: String
+
+    lateinit var solutionDependencyManager: ISolutionDependencyManager
+    lateinit var systemPermissionsManager: ISystemPermissionsManager
 
     var floatingButtonHost: FloatingButtonHost<ExtinguishService>? = null
     var awakeHost: AwakeHost? = null
@@ -148,6 +156,10 @@ class ExtinguishService : LifecycleService() {
         Log.d(TAG, "onCreate: ")
         //internalPassword = UUID.randomUUID().toString()
         super.onCreate()
+        solutionDependencyManager = SolutionDependencyManager(this).also {
+            it.updateImmediately()
+        }
+        systemPermissionsManager = SystemPermissionsManager(this)
         screenState.update { ScreenState.On }
     }
 
@@ -282,8 +294,15 @@ class ExtinguishService : LifecycleService() {
             settingRepository.update()
             loadFeatureFromSettings(settingRepository, removeFloatingButton)
 
-
-            if (!checkShizukuPermission()) {
+            solutionDependencyManager.updateImmediately()
+            if (!solutionDependencyManager.state.value.isShizukuPermissionGranted) {
+                state.update { State.Error }
+                return@launch
+            }
+            if (
+                feature.enabledFloatingButtonControl &&
+                !systemPermissionsManager.checkSpecial(SpecificPermission.CanDrawOverlays)
+            ) {
                 state.update { State.Error }
                 return@launch
             }

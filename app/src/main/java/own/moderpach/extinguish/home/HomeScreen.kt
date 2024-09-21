@@ -3,6 +3,8 @@ package own.moderpach.extinguish.home
 import android.app.Activity
 import android.content.Intent
 import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
@@ -63,9 +65,11 @@ import androidx.navigation.NavGraphBuilder
 import kotlinx.coroutines.delay
 import own.moderpach.extinguish.ExtinguishNavGraph
 import own.moderpach.extinguish.ExtinguishNavRoute
-import own.moderpach.extinguish.ISolutionsStateManager
-import own.moderpach.extinguish.ISystemPermissionsManager
+import own.moderpach.extinguish.LocalSolutionDependencyManager
+import own.moderpach.extinguish.LocalSystemPermissionsManager
+import own.moderpach.extinguish.Permission
 import own.moderpach.extinguish.R
+import own.moderpach.extinguish.SpecificPermission
 import own.moderpach.extinguish.home.cards.externalControl
 import own.moderpach.extinguish.home.cards.floatingButton
 import own.moderpach.extinguish.home.cards.moreSettings
@@ -76,10 +80,7 @@ import own.moderpach.extinguish.home.cards.tileControl
 import own.moderpach.extinguish.home.cards.volumeKeyControl
 import own.moderpach.extinguish.service.ExtinguishService
 import own.moderpach.extinguish.settings.data.ISettingsRepository
-import own.moderpach.extinguish.settings.data.SettingsTokens
 import own.moderpach.extinguish.settings.test.FakeSettingsRepository
-import own.moderpach.extinguish.test.FakeSolutionStateManager
-import own.moderpach.extinguish.test.FakeSystemPermissionsManager
 import own.moderpach.extinguish.ui.components.ExtinguishTopAppBar
 import own.moderpach.extinguish.ui.navigation.extinguishComposable
 import own.moderpach.extinguish.ui.theme.ExtinguishTheme
@@ -89,52 +90,53 @@ val ExtinguishNavGraph.Home: ExtinguishNavRoute get() = "Home"
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 fun NavGraphBuilder.home(
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) = extinguishComposable(
     ExtinguishNavGraph.Home,
 ) {
     val extinguishServiceState by ExtinguishService.state.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val windowSizeClass = calculateWindowSizeClass(context as Activity)
+    val context = LocalContext.current as Activity
+    val windowSizeClass = calculateWindowSizeClass(context)
+    val solutionsDependencyManager = LocalSolutionDependencyManager.current
+    val solutionState by solutionsDependencyManager.state.collectAsStateWithLifecycle()
+    val systemPermissionsManager = LocalSystemPermissionsManager.current
+    val permissionRequestLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {}
     val largerFAB = windowSizeClass.widthSizeClass >= WindowWidthSizeClass.Medium &&
             windowSizeClass.heightSizeClass >= WindowHeightSizeClass.Medium
-    val shouldGrantedDisplayOnOtherAppsPermission = with(settingsRepository) {
-        floatingButton.enabled.or(
-            volumeKeyEvent.enabled && volumeKeyEvent.listeningMethod == SettingsTokens.VolumeKeyEvent.ListeningMethodValue.Window
-        )
-    }
 
     HomeScreen(
         extinguishServiceState,
-        solutionsStateManager,
-        systemPermissionsManager,
         settingsRepository,
         largerFAB,
         onNavigateTo
     ) {
         when (ExtinguishService.state.value) {
             ExtinguishService.State.Destroyed -> {
-                solutionsStateManager.update()
-                if (!solutionsStateManager.state.value.isShizukuGranted) {
-                    solutionsStateManager.requestShizukuPermission()
-                    return@HomeScreen
+                solutionsDependencyManager.requestShizukuPermission { }
+                systemPermissionsManager.requestSpecial(SpecificPermission.CanDrawOverlays)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    systemPermissionsManager.request(
+                        Permission.PostNotification,
+                        {},
+                        permissionRequestLauncher,
+                        context
+                    )
                 }
-                if (!systemPermissionsManager.isDisplayOnOtherAppsGranted) {
-                    systemPermissionsManager.requestDisplayOnOtherApps()
-                    return@HomeScreen
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !systemPermissionsManager.isPostNotificationGranted) {
-                    systemPermissionsManager.requestPostNotification()
-                }
-                Intent(
+                solutionsDependencyManager.updateImmediately()
+                if (!solutionState.isShizukuPermissionGranted) return@HomeScreen
+                if (
+                    settingsRepository.floatingButton.enabled &&
+                    !systemPermissionsManager.checkSpecial(SpecificPermission.CanDrawOverlays)
+                ) return@HomeScreen
+
+                val intent = Intent(
                     context,
                     ExtinguishService::class.java
-                ).let {
-                    context.startService(it)
-                }
+                )
+                context.startService(intent)
             }
 
             ExtinguishService.State.Created -> Unit
@@ -152,8 +154,6 @@ fun NavGraphBuilder.home(
 @Composable
 fun HomeScreen(
     extinguishServiceState: ExtinguishService.State,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     largerFAB: Boolean,
     onNavigateTo: (ExtinguishNavRoute) -> Unit,
@@ -205,8 +205,6 @@ fun HomeScreen(
                 homeScreenCards(
                     cardList,
                     extinguishServiceState,
-                    solutionsStateManager,
-                    systemPermissionsManager,
                     settingsRepository,
                     onNavigateTo,
                     onRequestService
@@ -369,8 +367,6 @@ private fun HomeScreenPreviewNormalFAB() = ExtinguishTheme {
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
         HomeScreen(
             extinguishServiceState = ExtinguishService.State.Prepared,
-            solutionsStateManager = FakeSolutionStateManager(),
-            systemPermissionsManager = FakeSystemPermissionsManager(),
             settingsRepository = FakeSettingsRepository(),
             largerFAB = false,
             { }
@@ -384,8 +380,6 @@ private fun HomeScreenPreviewLargerFAB() = ExtinguishTheme {
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
         HomeScreen(
             extinguishServiceState = ExtinguishService.State.Prepared,
-            solutionsStateManager = FakeSolutionStateManager(),
-            systemPermissionsManager = FakeSystemPermissionsManager(),
             settingsRepository = FakeSettingsRepository(),
             largerFAB = true,
             { }

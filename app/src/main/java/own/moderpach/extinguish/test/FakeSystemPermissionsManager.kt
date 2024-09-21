@@ -1,26 +1,30 @@
 package own.moderpach.extinguish.test
 
-import android.util.Log
+import android.app.Activity
+import androidx.activity.result.ActivityResultLauncher
 import own.moderpach.extinguish.ISystemPermissionsManager
+import own.moderpach.extinguish.Permission
+import own.moderpach.extinguish.SpecificPermission
 
 private const val TAG = "FakeSystemPermissionsManager"
 
 class FakeSystemPermissionsManager : ISystemPermissionsManager {
-    override fun requestPermission(
-        permission: String,
+    override fun request(
+        permission: Permission,
         onRequestPermissionRationale: () -> Unit,
-        actionOnGranted: () -> Unit
+        launcher: ActivityResultLauncher<String>,
+        activity: Activity
     ) {
     }
 
-    override val isPostNotificationGranted: Boolean
-        get() = true
-
-    override fun requestPostNotification() {}
-
-    override val isDisplayOnOtherAppsGranted: Boolean = true
-
-    override fun requestDisplayOnOtherApps() {
-        Log.d(TAG, "requestDisplayOnOtherApps")
+    override fun check(permission: Permission): Boolean {
+        return false
     }
+
+    override fun requestSpecial(permission: SpecificPermission) {}
+
+    override fun checkSpecial(permission: SpecificPermission): Boolean {
+        return false
+    }
+
 }

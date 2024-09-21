@@ -32,16 +32,12 @@ import androidx.navigation.NavGraphBuilder
 import own.moderpach.extinguish.BuildConfig
 import own.moderpach.extinguish.ExtinguishNavGraph
 import own.moderpach.extinguish.ExtinguishNavRoute
-import own.moderpach.extinguish.ISolutionsStateManager
-import own.moderpach.extinguish.ISystemPermissionsManager
 import own.moderpach.extinguish.R
 import own.moderpach.extinguish.settings.components.SettingCard
 import own.moderpach.extinguish.settings.components.SettingLazyColumn
 import own.moderpach.extinguish.settings.components.SettingListItem
 import own.moderpach.extinguish.settings.data.ISettingsRepository
 import own.moderpach.extinguish.settings.test.FakeSettingsRepository
-import own.moderpach.extinguish.test.FakeSolutionStateManager
-import own.moderpach.extinguish.test.FakeSystemPermissionsManager
 import own.moderpach.extinguish.ui.components.ExtinguishTopAppBarWithNavigationBack
 import own.moderpach.extinguish.ui.navigation.extinguishComposable
 import own.moderpach.extinguish.ui.theme.ExtinguishTheme
@@ -50,8 +46,6 @@ val ExtinguishNavGraph.About: ExtinguishNavRoute get() = "About"
 
 fun NavGraphBuilder.about(
     onBack: () -> Unit,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) = extinguishComposable(
@@ -59,8 +53,6 @@ fun NavGraphBuilder.about(
 ) {
     AboutScreen(
         onBack,
-        solutionsStateManager,
-        systemPermissionsManager,
         settingsRepository,
         onNavigateTo
     )
@@ -70,8 +62,6 @@ fun NavGraphBuilder.about(
 @Composable
 fun AboutScreen(
     onBack: () -> Unit,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) {
@@ -216,8 +206,6 @@ private fun AboutScreenPreview() = ExtinguishTheme {
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
         AboutScreen(
             onBack = {},
-            solutionsStateManager = FakeSolutionStateManager(),
-            systemPermissionsManager = FakeSystemPermissionsManager(),
             settingsRepository = FakeSettingsRepository()
         ) { }
     }

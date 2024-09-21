@@ -1,6 +1,5 @@
 package own.moderpach.extinguish
 
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -12,7 +11,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.intl.Locale
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import own.moderpach.extinguish.guide.GuideAgreement
@@ -41,13 +39,12 @@ private const val TAG = "ExtinguishApp"
 
 @Composable
 fun ExtinguishApp(
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     timersRepository: ITimersRepository
 ) = ExtinguishTheme {
     val context = LocalContext.current
-    val solutionState by solutionsStateManager.state.collectAsState()
+    val solutionDependencyManager = LocalSolutionDependencyManager.current
+    val solutionState by solutionDependencyManager.state.collectAsState()
     val navController = rememberNavController()
 
     val onNavigateTo: (ExtinguishNavRoute) -> Unit = {
@@ -76,7 +73,7 @@ fun ExtinguishApp(
             else ExtinguishNavGraph.GuideSolution
             return@LaunchedEffect
         }
-        if (!solutionState.isShizukuRunning) {
+        if (!solutionState.isShizukuBinderAlive) {
             startDestination = ExtinguishNavGraph.GuideShizukuRunning
         }
     }
@@ -86,29 +83,21 @@ fun ExtinguishApp(
         startDestination = startDestination,
     ) {
         home(
-            solutionsStateManager,
-            systemPermissionsManager,
             settingsRepository,
             onNavigateTo
         )
         solution(
             onBack,
-            solutionsStateManager,
-            systemPermissionsManager,
             settingsRepository,
             onNavigateTo
         )
         floatingButton(
             onBack,
-            solutionsStateManager,
-            systemPermissionsManager,
             settingsRepository,
             onNavigateTo
         )
         timerPreset(
             onBack,
-            solutionsStateManager,
-            systemPermissionsManager,
             settingsRepository,
             timersRepository,
             onNavigateTo
@@ -118,29 +107,21 @@ fun ExtinguishApp(
         )
         volumeKeyControl(
             onBack,
-            solutionsStateManager,
-            systemPermissionsManager,
             settingsRepository,
             onNavigateTo
         )
         externalControl(
             onBack,
-            solutionsStateManager,
-            systemPermissionsManager,
             settingsRepository,
             onNavigateTo
         )
         compatible(
             onBack,
-            solutionsStateManager,
-            systemPermissionsManager,
             settingsRepository,
             onNavigateTo
         )
         about(
             onBack,
-            solutionsStateManager,
-            systemPermissionsManager,
             settingsRepository,
             onNavigateTo
         )
@@ -149,11 +130,11 @@ fun ExtinguishApp(
         }
         guideSolution(settingsRepository) {
             settingsRepository.initVersion = BuildExt.INIT_VERSION
-            startDestination = if (solutionState.isShizukuRunning) ExtinguishNavGraph.Home
+            startDestination = if (solutionState.isShizukuBinderAlive) ExtinguishNavGraph.Home
             else ExtinguishNavGraph.GuideShizukuRunning
         }
         guideShizukuRunning(
-            solutionsStateManager, settingsRepository,
+            settingsRepository,
             reselectSolution = {
                 startDestination = ExtinguishNavGraph.GuideSolution
             },

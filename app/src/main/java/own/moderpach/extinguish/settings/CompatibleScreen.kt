@@ -18,16 +18,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraphBuilder
 import own.moderpach.extinguish.ExtinguishNavGraph
 import own.moderpach.extinguish.ExtinguishNavRoute
-import own.moderpach.extinguish.ISolutionsStateManager
-import own.moderpach.extinguish.ISystemPermissionsManager
 import own.moderpach.extinguish.R
 import own.moderpach.extinguish.settings.components.SettingCard
 import own.moderpach.extinguish.settings.components.SettingLazyColumn
 import own.moderpach.extinguish.settings.components.SettingListItemWithSwitch
 import own.moderpach.extinguish.settings.data.ISettingsRepository
 import own.moderpach.extinguish.settings.test.FakeSettingsRepository
-import own.moderpach.extinguish.test.FakeSolutionStateManager
-import own.moderpach.extinguish.test.FakeSystemPermissionsManager
 import own.moderpach.extinguish.ui.components.ExtinguishTopAppBarWithNavigationBack
 import own.moderpach.extinguish.ui.navigation.extinguishComposable
 import own.moderpach.extinguish.ui.theme.ExtinguishTheme
@@ -36,8 +32,6 @@ val ExtinguishNavGraph.Compatible: ExtinguishNavRoute get() = "Compatible"
 
 fun NavGraphBuilder.compatible(
     onBack: () -> Unit,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) = extinguishComposable(
@@ -45,8 +39,6 @@ fun NavGraphBuilder.compatible(
 ) {
     CompatibleScreen(
         onBack,
-        solutionsStateManager,
-        systemPermissionsManager,
         settingsRepository,
         onNavigateTo
     )
@@ -56,8 +48,6 @@ fun NavGraphBuilder.compatible(
 @Composable
 fun CompatibleScreen(
     onBack: () -> Unit,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) {
@@ -100,8 +90,6 @@ private fun CompatibleScreenPreview() = ExtinguishTheme {
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
         CompatibleScreen(
             onBack = {},
-            solutionsStateManager = FakeSolutionStateManager(),
-            systemPermissionsManager = FakeSystemPermissionsManager(),
             settingsRepository = FakeSettingsRepository()
         ) { }
     }

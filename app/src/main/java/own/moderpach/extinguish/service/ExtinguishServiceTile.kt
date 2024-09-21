@@ -2,31 +2,36 @@ package own.moderpach.extinguish.service
 
 import android.content.Intent
 import android.os.Build
-import android.provider.Settings
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import own.moderpach.extinguish.ISolutionsStateManager
+import own.moderpach.extinguish.ISolutionDependencyManager
+import own.moderpach.extinguish.ISystemPermissionsManager
 import own.moderpach.extinguish.R
-import own.moderpach.extinguish.SolutionsStateManager
+import own.moderpach.extinguish.SolutionDependencyManager
+import own.moderpach.extinguish.SpecificPermission
+import own.moderpach.extinguish.SystemPermissionsManager
 import own.moderpach.extinguish.settings.data.SyncSettingsRepository
 import own.moderpach.extinguish.settings.data.settingsDataStore
 
 class ExtinguishServiceTile : TileService() {
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    lateinit var solutionsStateManager: ISolutionsStateManager
-    lateinit var settingsRepository: SyncSettingsRepository
+    private lateinit var solutionDependencyManager: ISolutionDependencyManager
+    private lateinit var systemPermissionsManager: ISystemPermissionsManager
+    private lateinit var settingsRepository: SyncSettingsRepository
 
     override fun onCreate() {
         super.onCreate()
-        solutionsStateManager = SolutionsStateManager(this)
+        solutionDependencyManager = SolutionDependencyManager(this).also {
+            it.updateImmediately()
+        }
+        systemPermissionsManager = SystemPermissionsManager(this)
         settingsRepository = SyncSettingsRepository(settingsDataStore)
     }
 
@@ -56,8 +61,12 @@ class ExtinguishServiceTile : TileService() {
 
     override fun onClick() {
         super.onClick()
-        if (!solutionsStateManager.checkShizukuPermission()) return
-        if (settingsRepository.floatingButton.enabled && !isDisplayOnOtherAppsGranted) return
+        solutionDependencyManager.updateImmediately()
+        if (!solutionDependencyManager.state.value.isShizukuPermissionGranted) return
+        if (
+            settingsRepository.floatingButton.enabled &&
+            !systemPermissionsManager.checkSpecial(SpecificPermission.CanDrawOverlays)
+        ) return
 
         when (ExtinguishService.state.value) {
             ExtinguishService.State.Destroyed -> startExtinguishService()
@@ -90,8 +99,5 @@ class ExtinguishServiceTile : TileService() {
         }
         qsTile.updateTile()
     }
-
-    val isDisplayOnOtherAppsGranted
-        get() = Settings.canDrawOverlays(this)
 
 }

@@ -24,15 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
 import own.moderpach.extinguish.ExtinguishNavGraph
 import own.moderpach.extinguish.ExtinguishNavRoute
-import own.moderpach.extinguish.ISolutionsStateManager
-import own.moderpach.extinguish.ISystemPermissionsManager
 import own.moderpach.extinguish.R
 import own.moderpach.extinguish.settings.components.RadioCard
 import own.moderpach.extinguish.settings.data.ISettingsRepository
 import own.moderpach.extinguish.settings.data.SettingsTokens
 import own.moderpach.extinguish.settings.test.FakeSettingsRepository
-import own.moderpach.extinguish.test.FakeSolutionStateManager
-import own.moderpach.extinguish.test.FakeSystemPermissionsManager
 import own.moderpach.extinguish.ui.components.ExtinguishTopAppBarWithNavigationBack
 import own.moderpach.extinguish.ui.navigation.extinguishComposable
 import own.moderpach.extinguish.ui.theme.ExtinguishTheme
@@ -42,8 +38,6 @@ val ExtinguishNavGraph.Solution: ExtinguishNavRoute get() = "Solution"
 
 fun NavGraphBuilder.solution(
     onBack: () -> Unit,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) = extinguishComposable(
@@ -51,8 +45,6 @@ fun NavGraphBuilder.solution(
 ) {
     SolutionScreen(
         onBack,
-        solutionsStateManager,
-        systemPermissionsManager,
         settingsRepository,
         onNavigateTo
     )
@@ -62,8 +54,6 @@ fun NavGraphBuilder.solution(
 @Composable
 fun SolutionScreen(
     onBack: () -> Unit,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) {
@@ -122,8 +112,6 @@ private fun SolutionScreenPreview() = ExtinguishTheme {
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
         SolutionScreen(
             onBack = {},
-            solutionsStateManager = FakeSolutionStateManager(),
-            systemPermissionsManager = FakeSystemPermissionsManager(),
             settingsRepository = FakeSettingsRepository()
         ) { }
     }

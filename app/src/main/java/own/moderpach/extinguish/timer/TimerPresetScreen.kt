@@ -1,7 +1,6 @@
 package own.moderpach.extinguish.timer
 
 import android.app.Activity
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,11 +28,6 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -45,13 +39,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
 import own.moderpach.extinguish.ExtinguishNavGraph
 import own.moderpach.extinguish.ExtinguishNavRoute
-import own.moderpach.extinguish.ISolutionsStateManager
-import own.moderpach.extinguish.ISystemPermissionsManager
 import own.moderpach.extinguish.R
 import own.moderpach.extinguish.settings.data.ISettingsRepository
 import own.moderpach.extinguish.settings.test.FakeSettingsRepository
-import own.moderpach.extinguish.test.FakeSolutionStateManager
-import own.moderpach.extinguish.test.FakeSystemPermissionsManager
 import own.moderpach.extinguish.timer.components.TimerCard
 import own.moderpach.extinguish.timer.components.TimerListItem
 import own.moderpach.extinguish.timer.data.ITimersRepository
@@ -66,8 +56,6 @@ val ExtinguishNavGraph.TimerPreset: ExtinguishNavRoute get() = "TimerPreset"
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 fun NavGraphBuilder.timerPreset(
     onBack: () -> Unit,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     timersRepository: ITimersRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
@@ -84,8 +72,6 @@ fun NavGraphBuilder.timerPreset(
 
     TimerPresetScreen(
         onBack,
-        solutionsStateManager,
-        systemPermissionsManager,
         settingsRepository,
         timersRepository,
         onNavigateTo,
@@ -101,8 +87,6 @@ enum class TimerPresetScreenType {
 @Composable
 fun TimerPresetScreen(
     onBack: () -> Unit,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     timersRepository: ITimersRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit,
@@ -192,8 +176,6 @@ private fun TimerPresetScreenListPreview() = ExtinguishTheme {
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
         TimerPresetScreen(
             onBack = {},
-            solutionsStateManager = FakeSolutionStateManager(),
-            systemPermissionsManager = FakeSystemPermissionsManager(),
             settingsRepository = FakeSettingsRepository(),
             timersRepository = FakeTimersRepository(),
             onNavigateTo = {},
@@ -208,8 +190,6 @@ private fun TimerPresetScreenGridPreview() = ExtinguishTheme {
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
         TimerPresetScreen(
             onBack = {},
-            solutionsStateManager = FakeSolutionStateManager(),
-            systemPermissionsManager = FakeSystemPermissionsManager(),
             settingsRepository = FakeSettingsRepository(),
             timersRepository = FakeTimersRepository(),
             onNavigateTo = {},

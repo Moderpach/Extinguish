@@ -108,4 +108,6 @@
     <string name="str_ExceptionWhenAccessShizukuRemote_description">Shizuku 工作不稳定。这也可能时 Bug 造成的。</string>
     <string name="str_SystemUnsupportedBrightnessSettings_name">您的设备不支持亮度设置</string>
     <string name="str_SystemUnsupportedBrightnessSettings_description">如果您的设备实际支持亮度和自动亮度设置，尝试切换它们可能可以解决问题。</string>
+    <string name="str_browser_not_found">浏览器未安装或启用</string>
+    <string name="str_shizuku_not_found">Shizuku 未安装或启用</string>
 </resources>

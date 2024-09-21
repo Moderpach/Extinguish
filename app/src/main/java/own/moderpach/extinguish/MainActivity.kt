@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.CompositionLocalProvider
 import own.moderpach.extinguish.settings.data.ISettingsRepository
 import own.moderpach.extinguish.settings.data.settingsDataStore
 import own.moderpach.extinguish.settings.data.settingsRepository
@@ -18,7 +19,7 @@ private const val TAG = "MainActivity"
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var solutionsStateManager: ISolutionsStateManager
+    private lateinit var solutionDependencyManager: SolutionDependencyManager
     private lateinit var systemPermissionsManager: ISystemPermissionsManager
     private lateinit var settingsRepository: ISettingsRepository
     private lateinit var timersRepository: ITimersRepository
@@ -29,21 +30,24 @@ class MainActivity : ComponentActivity() {
         Sui.init(packageName)
         enableEdgeToEdge()
 
-        solutionsStateManager = SolutionsStateManager(this).also {
-            it.initialize()
-            it.update()
+        solutionDependencyManager = SolutionDependencyManager(this).also {
+            it.updateImmediately()
         }
         systemPermissionsManager = SystemPermissionsManager(this)
         settingsRepository = settingsRepository(settingsDataStore)
         timersRepository = timersRepository(TimersDatabase.get(this).timersDao())
 
         setContent {
-            ExtinguishApp(
-                solutionsStateManager,
-                systemPermissionsManager,
-                settingsRepository,
-                timersRepository
-            )
+
+            CompositionLocalProvider(
+                LocalSolutionDependencyManager provides solutionDependencyManager,
+                LocalSystemPermissionsManager provides systemPermissionsManager
+            ) {
+                ExtinguishApp(
+                    settingsRepository,
+                    timersRepository
+                )
+            }
         }
     }
 
@@ -56,7 +60,7 @@ class MainActivity : ComponentActivity() {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         Log.d(TAG, "onWindowFocusChanged: ")
-        solutionsStateManager.update()
+        solutionDependencyManager.updateImmediately()
     }
 
 }

@@ -112,5 +112,7 @@
     <string name="str_ExceptionWhenAccessShizukuRemote_description">Unstable running of shizuku, or just caused by a bug.</string>
     <string name="str_SystemUnsupportedBrightnessSettings_name">Brightness settings is unsupported in your device</string>
     <string name="str_SystemUnsupportedBrightnessSettings_description">If your device actually support setting brightness or brightness mode, you can try to switch these settings may solve the problem.</string>
+    <string name="str_browser_not_found">Browser is not installed or enabled</string>
+    <string name="str_shizuku_not_found">Shizuku is not installed or enabled</string>
 
 </resources>

@@ -28,8 +28,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import own.moderpach.extinguish.ExtinguishNavRoute
-import own.moderpach.extinguish.ISolutionsStateManager
-import own.moderpach.extinguish.ISystemPermissionsManager
 import own.moderpach.extinguish.R
 import own.moderpach.extinguish.home.HomeScreenCardKey
 import own.moderpach.extinguish.home.HomeScreenCardKeys
@@ -44,8 +42,6 @@ val HomeScreenCardKeys.notificationControl: HomeScreenCardKey get() = "Notificat
 
 fun LazyStaggeredGridScope.notificationControlCard(
     extinguishServiceState: ExtinguishService.State,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) = item(
@@ -53,8 +49,6 @@ fun LazyStaggeredGridScope.notificationControlCard(
 ) {
     NotificationControlCard(
         extinguishServiceState,
-        solutionsStateManager,
-        systemPermissionsManager,
         settingsRepository,
         onNavigateTo
     )
@@ -63,8 +57,6 @@ fun LazyStaggeredGridScope.notificationControlCard(
 @Composable
 fun NotificationControlCard(
     extinguishServiceState: ExtinguishService.State,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) {

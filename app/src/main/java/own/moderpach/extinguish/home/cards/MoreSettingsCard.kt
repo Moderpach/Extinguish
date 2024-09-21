@@ -11,24 +11,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import own.moderpach.extinguish.ExtinguishNavGraph
 import own.moderpach.extinguish.ExtinguishNavRoute
-import own.moderpach.extinguish.service.ExtinguishService
-import own.moderpach.extinguish.ISolutionsStateManager
-import own.moderpach.extinguish.ISystemPermissionsManager
 import own.moderpach.extinguish.R
 import own.moderpach.extinguish.home.HomeScreenCardKey
 import own.moderpach.extinguish.home.HomeScreenCardKeys
+import own.moderpach.extinguish.service.ExtinguishService
 import own.moderpach.extinguish.settings.About
 import own.moderpach.extinguish.settings.Compatible
-import own.moderpach.extinguish.ui.components.ExtinguishCard
 import own.moderpach.extinguish.settings.data.ISettingsRepository
+import own.moderpach.extinguish.ui.components.ExtinguishCard
 import own.moderpach.extinguish.ui.components.ExtinguishListItem
 
 val HomeScreenCardKeys.moreSettings: HomeScreenCardKey get() = "MoreSettings"
 
 fun LazyStaggeredGridScope.moreSettingsCard(
     extinguishServiceState: ExtinguishService.State,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) = item(
@@ -36,8 +32,6 @@ fun LazyStaggeredGridScope.moreSettingsCard(
 ) {
     MoreSettingsCard(
         extinguishServiceState,
-        solutionsStateManager,
-        systemPermissionsManager,
         settingsRepository,
         onNavigateTo
     )
@@ -46,8 +40,6 @@ fun LazyStaggeredGridScope.moreSettingsCard(
 @Composable
 fun MoreSettingsCard(
     extinguishServiceState: ExtinguishService.State,
-    solutionsStateManager: ISolutionsStateManager,
-    systemPermissionsManager: ISystemPermissionsManager,
     settingsRepository: ISettingsRepository,
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) {
