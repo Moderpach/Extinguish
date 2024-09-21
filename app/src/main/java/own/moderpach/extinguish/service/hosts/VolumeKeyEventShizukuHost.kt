@@ -40,7 +40,6 @@ class VolumeKeyEventShizukuHost(
             service.unregisterListener(listener)
             isAwake = false
         }
-        service.unregisterListener(listener)
     }
 
     fun sleep() {
