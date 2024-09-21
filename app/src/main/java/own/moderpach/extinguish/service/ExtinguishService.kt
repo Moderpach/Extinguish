@@ -540,7 +540,7 @@ class ExtinguishService : LifecycleService() {
 
     private val displayControlServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            if (service != null && binder.pingBinder()) {
+            if (service != null && Shizuku.pingBinder()) {
                 displayControlService = IDisplayControl.Stub.asInterface(service)
             } else {
                 notifyException(
@@ -595,7 +595,7 @@ class ExtinguishService : LifecycleService() {
 
     private val eventsProviderServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            if (service != null && binder.pingBinder()) {
+            if (service != null && Shizuku.pingBinder()) {
                 eventsProviderService = IEventsProvider.Stub.asInterface(service)
             } else {
                 notifyException(
