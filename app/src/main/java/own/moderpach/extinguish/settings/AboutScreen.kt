@@ -1,7 +1,5 @@
 package own.moderpach.extinguish.settings
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +38,7 @@ import own.moderpach.extinguish.settings.data.ISettingsRepository
 import own.moderpach.extinguish.settings.test.FakeSettingsRepository
 import own.moderpach.extinguish.ui.components.ExtinguishTopAppBarWithNavigationBack
 import own.moderpach.extinguish.ui.navigation.extinguishComposable
+import own.moderpach.extinguish.ui.navigation.openUrlInBrowser
 import own.moderpach.extinguish.ui.theme.ExtinguishTheme
 
 val ExtinguishNavGraph.About: ExtinguishNavRoute get() = "About"
@@ -130,10 +129,7 @@ fun AboutScreen(
                         headline = stringResource(R.string.Repository),
                         supporting = "https://github.com/Moderpach/Extinguish",
                         onClick = {
-                            Intent(Intent.ACTION_VIEW).apply {
-                                setData(Uri.parse("https://github.com/Moderpach/Extinguish"))
-                                context.startActivity(this)
-                            }
+                            context.openUrlInBrowser("https://github.com/Moderpach/Extinguish")
                         }
                     )
                 }
