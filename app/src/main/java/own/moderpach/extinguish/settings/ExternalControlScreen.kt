@@ -54,7 +54,6 @@ import own.moderpach.extinguish.settings.test.FakeSettingsRepository
 import own.moderpach.extinguish.ui.components.ExtinguishTopAppBarWithNavigationBack
 import own.moderpach.extinguish.ui.navigation.extinguishComposable
 import own.moderpach.extinguish.ui.theme.ExtinguishTheme
-import own.moderpach.extinguish.util.add
 
 val ExtinguishNavGraph.ExternalControl: ExtinguishNavRoute get() = "ExternalControl"
 
@@ -113,7 +112,7 @@ fun ExternalControlScreen(
             externalControlNote.bufferedReader()
 
             SettingLazyColumn(
-                contentPadding = innerPadding.add(horizontal = 8.dp),
+                contentPadding = innerPadding,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 notes.forEach {
@@ -135,7 +134,7 @@ fun ExternalControlScreen(
 
                             }
                         } else {
-                            Text(it)
+                            Text(it, modifier = Modifier.padding(horizontal = 12.dp))
                         }
                     }
                 }
@@ -152,7 +151,8 @@ private fun CodeBlock(
     text: String,
     onCopy: () -> Unit
 ) = SettingCard(
-    modifier.padding(vertical = 8.dp)
+    modifier = modifier.padding(vertical = 8.dp),
+    shape = MaterialTheme.shapes.medium
 ) {
     Row(
         Modifier.fillMaxWidth(),

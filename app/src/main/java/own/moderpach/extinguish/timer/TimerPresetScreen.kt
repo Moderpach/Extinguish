@@ -148,7 +148,7 @@ fun TimerPresetScreen(
                 columns = StaggeredGridCells.Adaptive(300.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalItemSpacing = 12.dp,
-                contentPadding = innerPadding.add(horizontal = 16.dp)
+                contentPadding = innerPadding.add(horizontal = 12.dp)
                     .add(bottom = (56 + 16 * 3).dp),
                 content = {
                     items(

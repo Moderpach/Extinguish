@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,7 +22,7 @@ fun SettingCard(
     contentColor: Color = ExtinguishCardDefault.contentColor,
     tonalElevation: Dp = ExtinguishCardDefault.tonalElevation,
     shadowElevation: Dp = ExtinguishCardDefault.shadowElevation,
-    border: BorderStroke? = ExtinguishCardDefault.border,
+    border: BorderStroke? = null,
     contentPadding: PaddingValues = ExtinguishCardDefault.contentPadding,
     horizontalAlignment: Alignment.Horizontal = ExtinguishCardDefault.horizontalAlignment,
     verticalArrangement: Arrangement.Vertical = ExtinguishCardDefault.verticalArrangement,

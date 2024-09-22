@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -117,8 +116,8 @@ fun GuideAgreementScreen(
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = innerPadding.add(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            contentPadding = innerPadding.add(horizontal = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
                 SettingCard(

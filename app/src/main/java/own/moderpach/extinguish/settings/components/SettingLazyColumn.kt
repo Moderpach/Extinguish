@@ -5,7 +5,6 @@ import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -29,7 +28,7 @@ fun SettingLazyColumn(
 ) = LazyColumn(
     modifier.fillMaxSize(),
     state,
-    contentPadding.add(horizontal = 8.dp).add(bottom = 16.dp),
+    contentPadding.add(horizontal = 12.dp).add(bottom = 16.dp),
     false,
     verticalArrangement,
     horizontalAlignment,

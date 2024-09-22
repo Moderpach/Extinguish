@@ -99,7 +99,7 @@ fun GuideSolutionScreen(
             columns = StaggeredGridCells.Adaptive(300.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalItemSpacing = 12.dp,
-            contentPadding = innerPadding.add(horizontal = 16.dp).add(bottom = 64.dp),
+            contentPadding = innerPadding.add(horizontal = 12.dp).add(bottom = 64.dp),
         ) {
             item {
                 RadioCard(
