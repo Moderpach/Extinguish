@@ -178,7 +178,7 @@ private fun CodeBlock(
         IconButton(
             onClick = onCopy
         ) {
-            Icon(painterResource(R.drawable.content_copy_24px), stringResource(R.string.Copy))
+            Icon(painterResource(R.drawable.content_copy_20px), stringResource(R.string.Copy))
         }
     }
 }
