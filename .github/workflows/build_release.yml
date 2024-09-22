@@ -78,11 +78,15 @@ jobs:
           jarsigner -keystore $KEY_STORE_FILE -storepass $KEYSTORE_PASS -keypass $KEY_PASS $UNSIGNED_APP_NAME $KEY_ALIAS
           mv $UNSIGNED_APP_NAME $SIGNED_APP_NAME
 
+      - name: Output in place
+        run: |
+          mkdir output
+          mv app/build/outputs/apk/unsigned/release/app-release.apk output
+          mv app/build/outputs/bundle/unsignedRelease/app-release.aab output
+
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: |
-            app/build/outputs/apk/unsigned/release/app-release.apk
-            app/build/outputs/bundle/unsignedRelease/app-release.aab
+          path: output/
