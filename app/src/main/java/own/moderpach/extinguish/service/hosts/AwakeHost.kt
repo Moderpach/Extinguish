@@ -11,8 +11,6 @@ import android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
 import android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import android.view.WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import own.moderpach.extinguish.util.ext.addFlags
 import own.moderpach.extinguish.util.ext.clearFlags
 
@@ -45,21 +43,17 @@ class AwakeHost(
         if (!mView.isAttachedToWindow) windowManager.addView(mView, mLayoutParams)
     }
 
-    suspend fun startKeepAwake() {
-        withContext(Dispatchers.Main) {
-            if (mView.isAttachedToWindow) {
-                mLayoutParams.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                windowManager.updateViewLayout(mView, mLayoutParams)
-            }
+    fun startKeepAwake() {
+        if (mView.isAttachedToWindow) {
+            mLayoutParams.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            windowManager.updateViewLayout(mView, mLayoutParams)
         }
     }
 
-    suspend fun stopKeepAwake() {
-        withContext(Dispatchers.Main) {
-            if (mView.isAttachedToWindow) {
-                mLayoutParams.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                windowManager.updateViewLayout(mView, mLayoutParams)
-            }
+    fun stopKeepAwake() {
+        if (mView.isAttachedToWindow) {
+            mLayoutParams.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            windowManager.updateViewLayout(mView, mLayoutParams)
         }
     }
 
