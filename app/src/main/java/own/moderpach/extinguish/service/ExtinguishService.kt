@@ -759,11 +759,11 @@ class ExtinguishService : LifecycleService() {
                     notifyException(ExceptionScenes.SystemUnsupportedBrightnessSettings, e)
                     Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
                 }
-            }
-            try {
-                displayControlService?.setBrightnessModeToSetting(Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL)
-            } catch (e: Exception) {
-                notifyException(ExceptionScenes.ExceptionWhenAccessShizukuRemote, e)
+                try {
+                    displayControlService?.setBrightnessModeToSetting(Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL)
+                } catch (e: Exception) {
+                    notifyException(ExceptionScenes.ExceptionWhenAccessShizukuRemote, e)
+                }
             }
             try {
                 when (feature.solution) {
