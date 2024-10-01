@@ -1,0 +1,1 @@
+Helps you run any android apps as if the screen is on while it is off.

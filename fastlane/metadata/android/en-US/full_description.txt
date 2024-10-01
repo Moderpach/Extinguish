@@ -1,0 +1,23 @@
+<p>
+Helps you run any android apps as if the screen is on while it is off.
+</p>
+
+<article>
+<h2>Features</h2>
+<p>
+Extinguish turns off the screen using Android’s hidden function. It truly turns off the device’s
+screen rather than displaying a black overlay, making it suitable for various types of screens,
+including LCD and OLED.
+</p>
+<p>Extinguish supports using the following methods to control the screen state:</p>
+<ul>
+<li>Floating button</li>
+<li>Volume key event</li>
+<li>Touch screen</li>
+<li>Notification</li>
+<li>Quick settings tile</li>
+<li>ADB command</li>
+</ul>
+</article>
+
+
