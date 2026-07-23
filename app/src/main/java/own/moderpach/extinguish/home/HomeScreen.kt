@@ -80,6 +80,7 @@ import own.moderpach.extinguish.home.cards.tileControl
 import own.moderpach.extinguish.home.cards.volumeKeyControl
 import own.moderpach.extinguish.service.ExtinguishService
 import own.moderpach.extinguish.settings.data.ISettingsRepository
+import own.moderpach.extinguish.settings.data.SettingsTokens
 import own.moderpach.extinguish.settings.test.FakeSettingsRepository
 import own.moderpach.extinguish.ui.components.ExtinguishTopAppBar
 import own.moderpach.extinguish.ui.navigation.extinguishComposable
@@ -130,6 +131,11 @@ fun NavGraphBuilder.home(
                 if (
                     settingsRepository.floatingButton.enabled &&
                     !systemPermissionsManager.checkSpecial(SpecificPermission.CanDrawOverlays)
+                ) return@HomeScreen
+                if (
+                    settingsRepository.volumeKeyEvent.enabled &&
+                    settingsRepository.volumeKeyEvent.listeningMethod == SettingsTokens.VolumeKeyEvent.ListeningMethodValue.Accessibility &&
+                    !systemPermissionsManager.checkSpecial(SpecificPermission.AccessibilityServiceEnabled)
                 ) return@HomeScreen
 
                 val intent = Intent(

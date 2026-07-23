@@ -16,6 +16,7 @@ fun WindowManager.LayoutParams.setFlags(flags: Int, mask: Int) {
     this.flags = this.flags and mask.inv() or (flags and mask)
 }
 
+@Suppress("DEPRECATION")
 fun getScreenRect(windowManager: WindowManager) =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         val r = Rect()
@@ -27,6 +28,7 @@ fun getScreenRect(windowManager: WindowManager) =
         r
     }
 
+@Suppress("DEPRECATION")
 fun WindowManager.getScreenRectNew() =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         val r = Rect()

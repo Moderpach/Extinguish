@@ -34,7 +34,8 @@ object SettingsTokens {
 
         enum class ListeningMethodValue {
             Shell,
-            Window
+            Window,
+            Accessibility
         }
 
         val ListeningMethod =

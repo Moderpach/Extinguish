@@ -36,6 +36,7 @@ class VolumeKeyEventWindowHost(
         val isVolumeKeyCode = keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
                 keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
         if (isVolumeKeyCode) {
+            // consume DOWN too, otherwise the system still changes the volume
             if (event.action == KeyEvent.ACTION_UP) {
                 Log.d(TAG, "get key event $keyCode")
                 onKeyEvent()
@@ -55,6 +56,7 @@ class VolumeKeyEventWindowHost(
     }
 
     fun sleep() {
+        // detach instead of hiding, a hidden focusable window still takes input focus
         if (mView.isAttachedToWindow)
             windowManager.removeView(mView)
     }

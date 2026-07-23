@@ -20,6 +20,7 @@ class VolumeKeyEventShizukuHost(
 
     private val audioManager = owner.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
+    // the volume keys may change any of these, depending on what's playing
     private val watchedStreams = intArrayOf(
         AudioManager.STREAM_MUSIC,
         AudioManager.STREAM_RING,
@@ -30,6 +31,7 @@ class VolumeKeyEventShizukuHost(
     )
     private var lockedVolumes: IntArray = IntArray(0)
 
+    // getevent can't consume key events, so put the volume back instead
     private fun restoreLockedVolume() {
         if (lockedVolumes.isEmpty()) return
         for (i in watchedStreams.indices) {

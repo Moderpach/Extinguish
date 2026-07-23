@@ -46,6 +46,7 @@
     <string name="str_volumeKeyListeningMethod">Method of getting volume key event</string>
     <string name="str_shell" translatable="false">Shell</string>
     <string name="str_android_window" translatable="false">Android Window</string>
+    <string name="str_accessibility" translatable="false">Accessibility</string>
     <string name="Compatibility">Compatibility</string>
     <string name="str_brightnessManualWhenScreenOff">Set brightness manual when screen off</string>
     <string name="Copy">Copy</string>
@@ -80,6 +81,11 @@
     <string name="Delete">Delete</string>
     <string name="str_shell_supporting">It will not intercept the system volume key functions. It will not interfere with app focus, input methods, or gesture navigation.</string>
     <string name="str_android_window_supporting">It will intercept the system volume key functions. However, it may cause issues with app focus, input methods, and gesture navigation.</string>
+    <string name="str_accessibility_supporting">It will intercept the system volume key functions system-wide via an Accessibility Service, without ever taking window or input focus. It will not interfere with app focus, input methods, or gesture navigation. Requires enabling the Extinguish accessibility service in system settings.</string>
+    <string name="str_accessibility_service_description">Lets Extinguish detect and consume hardware volume key presses so it can turn the screen on or off, without changing the media volume.</string>
+    <string name="str_accessibilityServiceNotEnabled">Accessibility service is not enabled</string>
+    <string name="str_accessibilityServiceNotEnabled_supporting">This method requires the Extinguish accessibility service to be turned on in system settings.</string>
+    <string name="Open_accessibility_settings">Open accessibility settings</string>
     <string name="Show_timer_popup">Show timer popup</string>
     <string name="Previous">Previous</string>
     <string name="Next">Next</string>
