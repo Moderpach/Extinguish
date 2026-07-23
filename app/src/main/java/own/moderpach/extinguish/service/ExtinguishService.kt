@@ -329,6 +329,7 @@ class ExtinguishService : LifecycleService() {
                         settingRepository.floatingButton.fadeWhenUnused,
                         settingRepository.floatingButton.fadeTransparency,
                         settingRepository.floatingButton.blackStyle,
+                        settingRepository.floatingButton.showTimerButton,
                         settingRepository.floatingButton.mergeTimerButton
                     )
                 ) { action ->

@@ -9,6 +9,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import android.view.WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+import androidx.lifecycle.LifecycleOwner
 import own.moderpach.extinguish.util.ext.addFlags
 
 private const val TAG = "VolumeKeyEventWindowHost"
