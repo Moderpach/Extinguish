@@ -812,6 +812,8 @@ class ExtinguishService : LifecycleService() {
     private fun registerSystemLockReceiver() {
         systemLockReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
+                // only restore if Extinguish turned the screen off, not on every lock/timeout
+                if (screenState.value != ScreenState.Off) return
                 lifecycleScope.launch(Dispatchers.Main) {
                     screenControlMutex.withLock {
                         displayControlService?.setBrightnessToSetting(recordBrightness)

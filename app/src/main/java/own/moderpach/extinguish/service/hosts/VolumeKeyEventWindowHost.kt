@@ -9,8 +9,6 @@ import android.view.View
 import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import android.view.WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
-import androidx.core.view.isVisible
-import androidx.lifecycle.LifecycleOwner
 import own.moderpach.extinguish.util.ext.addFlags
 
 private const val TAG = "VolumeKeyEventWindowHost"
@@ -36,12 +34,14 @@ class VolumeKeyEventWindowHost(
     private val listener = View.OnKeyListener { _, keyCode, event ->
         val isVolumeKeyCode = keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
                 keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
-        if (isVolumeKeyCode && event.action == KeyEvent.ACTION_UP) {
-            Log.d(TAG, "get key event $keyCode")
-            onKeyEvent()
-            return@OnKeyListener false
+        if (isVolumeKeyCode) {
+            if (event.action == KeyEvent.ACTION_UP) {
+                Log.d(TAG, "get key event $keyCode")
+                onKeyEvent()
+            }
+            return@OnKeyListener true
         }
-        true
+        false
     }
 
     val mView = View(owner).apply {
@@ -54,11 +54,13 @@ class VolumeKeyEventWindowHost(
     }
 
     fun sleep() {
-        if (mView.isAttachedToWindow) mView.isVisible = false
+        if (mView.isAttachedToWindow)
+            windowManager.removeView(mView)
     }
 
     fun wake() {
-        if (mView.isAttachedToWindow) mView.isVisible = true
+        if (!mView.isAttachedToWindow)
+            windowManager.addView(mView, mLayoutParams)
     }
 
     fun destroy() {
