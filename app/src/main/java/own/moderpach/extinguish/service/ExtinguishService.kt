@@ -336,6 +336,14 @@ class ExtinguishService : LifecycleService() {
             }
             if (
                 feature.enabledVolumeKeyEventControl &&
+                feature.volumeKeyEventControlMethod == Window &&
+                !systemPermissionsManager.checkSpecial(SpecificPermission.CanDrawOverlays)
+            ) {
+                state.update { State.Error }
+                return@launch
+            }
+            if (
+                feature.enabledVolumeKeyEventControl &&
                 feature.volumeKeyEventControlMethod == Accessibility &&
                 !systemPermissionsManager.checkSpecial(SpecificPermission.AccessibilityServiceEnabled)
             ) {
@@ -471,9 +479,7 @@ class ExtinguishService : LifecycleService() {
                                     feature.volumeKeyEventControlMethod == Shell
                                 )
                             ) {
-                                volumeKeyEventShizukuHost = VolumeKeyEventShizukuHost(
-                                    this@ExtinguishService, service
-                                ) {
+                                volumeKeyEventShizukuHost = VolumeKeyEventShizukuHost(service) {
                                     lifecycleScope.launch(Dispatchers.Main) {
                                         if (isScreenOn) {
                                             updateHostState(false, feature)
@@ -728,7 +734,7 @@ class ExtinguishService : LifecycleService() {
                 volumeKeyEventAccessibilityHost = null
                 eventsProviderService?.let { service ->
                     if (volumeKeyEventShizukuHost == null) {
-                        volumeKeyEventShizukuHost = VolumeKeyEventShizukuHost(this@ExtinguishService, service, ::volumeKeyEventAction)
+                        volumeKeyEventShizukuHost = VolumeKeyEventShizukuHost(service, ::volumeKeyEventAction)
                             .also { it.register() }
                     }
                     if (shouldSleep) volumeKeyEventShizukuHost?.sleep()
@@ -741,6 +747,15 @@ class ExtinguishService : LifecycleService() {
                 volumeKeyEventAccessibilityHost = null
                 volumeKeyEventShizukuHost?.unregister()
                 volumeKeyEventShizukuHost = null
+                // the overlay window needs this permission even if the floating button is off
+                if (!systemPermissionsManager.checkSpecial(SpecificPermission.CanDrawOverlays)) {
+                    notifyException(
+                        ExceptionScenes.ExceptionWhenInvokeSystemFunction,
+                        "Missing overlay permission",
+                        "The 'Android Window' volume key method needs the 'draw over other apps' permission."
+                    )
+                    return
+                }
                 if (volumeKeyEventWindowHost == null) {
                     volumeKeyEventWindowHost = VolumeKeyEventWindowHost(this@ExtinguishService, ::volumeKeyEventAction)
                         .also { it.create() }

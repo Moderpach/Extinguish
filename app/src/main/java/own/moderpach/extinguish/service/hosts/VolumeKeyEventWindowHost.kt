@@ -51,23 +51,44 @@ class VolumeKeyEventWindowHost(
     }
 
     fun create() {
-        if (!mView.isAttachedToWindow)
-            windowManager.addView(mView, mLayoutParams)
+        if (!mView.isAttachedToWindow) {
+            try {
+                windowManager.addView(mView, mLayoutParams)
+            } catch (e: Exception) {
+                // e.g. missing overlay permission
+                Log.e(TAG, "create: failed to attach overlay window", e)
+            }
+        }
     }
 
     fun sleep() {
         // detach instead of hiding, a hidden focusable window still takes input focus
-        if (mView.isAttachedToWindow)
-            windowManager.removeView(mView)
+        if (mView.isAttachedToWindow) {
+            try {
+                windowManager.removeView(mView)
+            } catch (e: Exception) {
+                Log.e(TAG, "sleep: failed to detach overlay window", e)
+            }
+        }
     }
 
     fun wake() {
-        if (!mView.isAttachedToWindow)
-            windowManager.addView(mView, mLayoutParams)
+        if (!mView.isAttachedToWindow) {
+            try {
+                windowManager.addView(mView, mLayoutParams)
+            } catch (e: Exception) {
+                Log.e(TAG, "wake: failed to attach overlay window", e)
+            }
+        }
     }
 
     fun destroy() {
-        if (mView.isAttachedToWindow)
-            windowManager.removeView(mView)
+        if (mView.isAttachedToWindow) {
+            try {
+                windowManager.removeView(mView)
+            } catch (e: Exception) {
+                Log.e(TAG, "destroy: failed to detach overlay window", e)
+            }
+        }
     }
 }

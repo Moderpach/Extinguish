@@ -84,6 +84,9 @@ fun VolumeKeyControlScreen(
     var isAccessibilityServiceEnabled by remember {
         mutableStateOf(systemPermissionsManager.checkSpecial(SpecificPermission.AccessibilityServiceEnabled))
     }
+    var isOverlayPermissionGranted by remember {
+        mutableStateOf(systemPermissionsManager.checkSpecial(SpecificPermission.CanDrawOverlays))
+    }
     // these can only change in system settings, so re-check when coming back
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -91,6 +94,8 @@ fun VolumeKeyControlScreen(
             if (event == Lifecycle.Event.ON_RESUME) {
                 isAccessibilityServiceEnabled =
                     systemPermissionsManager.checkSpecial(SpecificPermission.AccessibilityServiceEnabled)
+                isOverlayPermissionGranted =
+                    systemPermissionsManager.checkSpecial(SpecificPermission.CanDrawOverlays)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -170,6 +175,28 @@ fun VolumeKeyControlScreen(
                             headline = stringResource(R.string.str_android_window),
                             supporting = stringResource(R.string.str_android_window_supporting)
                         )
+                        if (
+                            settingsRepository.volumeKeyEvent.listeningMethod == SettingsTokens.VolumeKeyEvent.ListeningMethodValue.Window &&
+                            !isOverlayPermissionGranted
+                        ) {
+                            SettingCard {
+                                SettingListItem(
+                                    headline = stringResource(R.string.str_overlayPermissionNotGranted),
+                                    supporting = stringResource(R.string.str_overlayPermissionNotGranted_supporting)
+                                )
+                                Button(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp)
+                                        .padding(bottom = 16.dp),
+                                    onClick = {
+                                        systemPermissionsManager.requestSpecial(SpecificPermission.CanDrawOverlays)
+                                    }
+                                ) {
+                                    Text(stringResource(R.string.Open_overlay_settings))
+                                }
+                            }
+                        }
                         // FLAG_REQUEST_FILTER_KEY_EVENTS requires API 33
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             RadioCard(

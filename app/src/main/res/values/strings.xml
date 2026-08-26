@@ -86,6 +86,9 @@
     <string name="str_accessibilityServiceNotEnabled">Accessibility service is not enabled</string>
     <string name="str_accessibilityServiceNotEnabled_supporting">This method requires the Extinguish accessibility service to be turned on in system settings.</string>
     <string name="Open_accessibility_settings">Open accessibility settings</string>
+    <string name="str_overlayPermissionNotGranted">\"Draw over other apps\" permission not granted</string>
+    <string name="str_overlayPermissionNotGranted_supporting">The Android Window method needs this permission to intercept volume keys, even if the floating button is turned off.</string>
+    <string name="Open_overlay_settings">Open overlay settings</string>
     <string name="Show_timer_popup">Show timer popup</string>
     <string name="Previous">Previous</string>
     <string name="Next">Next</string>
