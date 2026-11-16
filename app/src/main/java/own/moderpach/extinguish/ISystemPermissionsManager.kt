@@ -12,7 +12,8 @@ enum class Permission(val permissionName: String) {
 }
 
 enum class SpecificPermission {
-    CanDrawOverlays
+    CanDrawOverlays,
+    AccessibilityServiceEnabled
 }
 
 val LocalSystemPermissionsManager = compositionLocalOf<ISystemPermissionsManager> {

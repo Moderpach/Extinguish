@@ -30,6 +30,7 @@ class DisplayControlService : IDisplayControl.Stub() {
             }
         }
 
+    @Suppress("DEPRECATION")
     private fun getPrimaryPhysicalDisplayToken(): IBinder {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             val primaryPhysicalDisplayId = DisplayControlProxy.getPhysicalDisplayIds()[0]

@@ -11,6 +11,7 @@ import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.os.IInterface
 import android.provider.Settings
 import android.util.Log
 import androidx.lifecycle.LifecycleService
@@ -23,6 +24,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -30,6 +33,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import own.moderpach.extinguish.BuildConfig
 import own.moderpach.extinguish.ExceptionScenes
 import own.moderpach.extinguish.ISolutionDependencyManager
@@ -42,12 +46,14 @@ import own.moderpach.extinguish.service.hosts.AwakeHost
 import own.moderpach.extinguish.service.hosts.FloatingButtonHost
 import own.moderpach.extinguish.service.hosts.NotificationHost
 import own.moderpach.extinguish.service.hosts.ScreenEventHost
+import own.moderpach.extinguish.service.hosts.VolumeKeyEventAccessibilityHost
 import own.moderpach.extinguish.service.hosts.VolumeKeyEventShizukuHost
 import own.moderpach.extinguish.service.hosts.VolumeKeyEventWindowHost
 import own.moderpach.extinguish.settings.data.ISettingsRepository
 import own.moderpach.extinguish.settings.data.SettingsTokens
 import own.moderpach.extinguish.settings.data.SettingsTokens.SolutionValue.ShizukuPowerOffScreen
 import own.moderpach.extinguish.settings.data.SettingsTokens.SolutionValue.ShizukuScreenBrightnessNeg1
+import own.moderpach.extinguish.settings.data.SettingsTokens.VolumeKeyEvent.ListeningMethodValue.Accessibility
 import own.moderpach.extinguish.settings.data.SettingsTokens.VolumeKeyEvent.ListeningMethodValue.Shell
 import own.moderpach.extinguish.settings.data.SettingsTokens.VolumeKeyEvent.ListeningMethodValue.Window
 import own.moderpach.extinguish.settings.data.SyncSettingsRepository
@@ -88,6 +94,10 @@ class ExtinguishService : LifecycleService() {
         const val EXTRA_VALUE_STOP = 1
 
         const val EXTRA_VALUE_INVALID = -1
+
+        private const val DEPENDENCY_WAIT_MS = 5000L
+
+        private const val GETEVENT_ARGS = "-F -e \": 0001 014a\" -e \": 0001 0072\" -e \": 0001 0073\""
     }
 
     //todo: password support
@@ -100,6 +110,7 @@ class ExtinguishService : LifecycleService() {
     var awakeHost: AwakeHost? = null
     var volumeKeyEventWindowHost: VolumeKeyEventWindowHost? = null
     var volumeKeyEventShizukuHost: VolumeKeyEventShizukuHost? = null
+    var volumeKeyEventAccessibilityHost: VolumeKeyEventAccessibilityHost? = null
     var screenEventHost: ScreenEventHost? = null
     val notificationHost by lazy { NotificationHost(this) }
 
@@ -144,6 +155,15 @@ class ExtinguishService : LifecycleService() {
                         ) volumeKeyEventWindowHost?.wake()
                         else volumeKeyEventWindowHost?.sleep()
                     }
+
+                    Accessibility -> {
+                        if (
+                            (feature.clickVolumeKeyToTurnScreenOn && !requestScreenOn).or(
+                                feature.clickVolumeKeyToTurnScreenOff && requestScreenOn
+                            )
+                        ) volumeKeyEventAccessibilityHost?.wake()
+                        else volumeKeyEventAccessibilityHost?.sleep()
+                    }
                 }
             }
 
@@ -172,6 +192,7 @@ class ExtinguishService : LifecycleService() {
         }
         systemPermissionsManager = SystemPermissionsManager(this)
         screenState.update { ScreenState.On }
+        Shizuku.addBinderReceivedListener(shizukuBinderReceivedListener)
     }
 
     /**
@@ -296,25 +317,68 @@ class ExtinguishService : LifecycleService() {
 
     var initializeJob: Job? = null
 
+    private lateinit var settingRepository: SyncSettingsRepository
+
     private fun initialize(removeFloatingButton: Boolean) {
         if (initializeJob?.isActive == true) return
+        removeFloatingButtonOverride = removeFloatingButton
         initializeJob = lifecycleScope.launch(Dispatchers.Main) {
+            // clean up after a previous failed attempt
+            releaseRuntime()
+
             state.update { State.Created }
 
-            val settingRepository = SyncSettingsRepository(settingsDataStore)
+            settingRepository = SyncSettingsRepository(settingsDataStore)
             settingRepository.update()
             loadFeatureFromSettings(settingRepository, removeFloatingButton)
 
-            solutionDependencyManager.updateImmediately()
-            if (!solutionDependencyManager.state.value.isShizukuPermissionGranted) {
-                state.update { State.Error }
+            // must happen before any early return, or the app gets killed
+            enterForeground()
+
+            val shizukuReady = waitUntil(DEPENDENCY_WAIT_MS) {
+                solutionDependencyManager.updateImmediately()
+                solutionDependencyManager.state.value.isShizukuPermissionGranted
+            }
+            if (!shizukuReady) {
+                failInitialization(
+                    ExceptionScenes.ExceptionWhenAccessShizukuRemote,
+                    "Shizuku is not running or permission is not granted"
+                )
                 return@launch
             }
             if (
                 feature.enabledFloatingButtonControl &&
                 !systemPermissionsManager.checkSpecial(SpecificPermission.CanDrawOverlays)
             ) {
-                state.update { State.Error }
+                failInitialization(
+                    ExceptionScenes.ExceptionWhenInvokeSystemFunction,
+                    "Missing 'draw over other apps' permission (floating button)"
+                )
+                return@launch
+            }
+            if (
+                feature.enabledVolumeKeyEventControl &&
+                feature.volumeKeyEventControlMethod == Window &&
+                !systemPermissionsManager.checkSpecial(SpecificPermission.CanDrawOverlays)
+            ) {
+                failInitialization(
+                    ExceptionScenes.ExceptionWhenInvokeSystemFunction,
+                    "Missing 'draw over other apps' permission (Android Window volume key method)"
+                )
+                return@launch
+            }
+            if (
+                feature.enabledVolumeKeyEventControl &&
+                feature.volumeKeyEventControlMethod == Accessibility &&
+                !waitUntil(DEPENDENCY_WAIT_MS) {
+                    systemPermissionsManager.checkSpecial(SpecificPermission.AccessibilityServiceEnabled)
+                }
+            ) {
+                failInitialization(
+                    ExceptionScenes.ExceptionWhenInvokeSystemFunction,
+                    "Extinguish accessibility service is not enabled or not running " +
+                            "(Android may have stopped it after a crash - toggle it off and on)"
+                )
                 return@launch
             }
 
@@ -329,6 +393,7 @@ class ExtinguishService : LifecycleService() {
                         settingRepository.floatingButton.fadeWhenUnused,
                         settingRepository.floatingButton.fadeTransparency,
                         settingRepository.floatingButton.blackStyle,
+                        settingRepository.floatingButton.showTimerButton,
                         settingRepository.floatingButton.mergeTimerButton
                     )
                 ) { action ->
@@ -395,6 +460,35 @@ class ExtinguishService : LifecycleService() {
                 }
             }
 
+            if (
+                feature.enabledVolumeKeyEventControl.and(
+                    feature.volumeKeyEventControlMethod == Accessibility
+                )
+            ) {
+                volumeKeyEventAccessibilityHost = VolumeKeyEventAccessibilityHost {
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        if (isScreenOn) {
+                            updateHostState(false, feature)
+                            turnScreenOff()
+                        } else {
+                            updateHostState(true, feature)
+                            turnScreenOn()
+                        }
+                    }
+                }.also {
+                    it.create()
+                    if (
+                        (isScreenOn && !feature.clickVolumeKeyToTurnScreenOff).or(
+                            !isScreenOn && !feature.clickVolumeKeyToTurnScreenOn
+                        )
+                    ) {
+                        it.sleep()
+                    } else {
+                        it.wake()
+                    }
+                }
+            }
+
             bindDisplayControlService()
 
             withTimeout(8000) {
@@ -416,9 +510,7 @@ class ExtinguishService : LifecycleService() {
                                     feature.volumeKeyEventControlMethod == Shell
                                 )
                             ) {
-                                volumeKeyEventShizukuHost = VolumeKeyEventShizukuHost(
-                                    this@ExtinguishService, service
-                                ) {
+                                volumeKeyEventShizukuHost = VolumeKeyEventShizukuHost(service) {
                                     lifecycleScope.launch(Dispatchers.Main) {
                                         if (isScreenOn) {
                                             updateHostState(false, feature)
@@ -447,31 +539,20 @@ class ExtinguishService : LifecycleService() {
                                 }
                             }
 
-                            service.launch("-F -e \": 0001 014a\" -e \": 0001 0072\" -e \": 0001 0073\"")
+                            service.launch(GETEVENT_ARGS)
                         }
 
                         registerSystemLockReceiver()
 
-                        notificationHost.notify(
-                            isScreenOn,
-                            floatingButtonHost?.isShowing ?: false,
-                            feature.enabledFloatingButtonControl
-                        ).also {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                                // Fix the crash at android 15, java.lang.SecurityException: Starting FGS with type specialUse callerApp=ProcessRecord{7536cde 20348:own.moderpach.extinguish/u0a616} targetSDK=35 requires permissions: all of the permissions allOf=true [android.permission.FOREGROUND_SERVICE_SPECIAL_USE]
-                                startForeground(NotificationHost.NOTIFICATION_ID, it, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
-                            } else {
-                                startForeground(NotificationHost.NOTIFICATION_ID, it)
-                            }
-                        }
+                        enterForeground()
 
                         state.update { State.Prepared }
+                        observeSettingsChanges()
                     } else {
-                        notifyException(
+                        failInitialization(
                             ExceptionScenes.ExceptionWhenAccessShizukuRemote,
                             "binding shizuku remote service timeout"
                         )
-                        state.update { State.Error }
                     }
                 }
             }
@@ -498,29 +579,74 @@ class ExtinguishService : LifecycleService() {
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy: ")
+        isDestroying = true
+        Shizuku.removeBinderReceivedListener(shizukuBinderReceivedListener)
+        reconnectJob?.cancel()
         runBlocking {
+            settingsObserverJob?.cancel()
             if (state.value == State.Prepared && screenState.value == ScreenState.Off) {
                 turnScreenOn()
             }
-            unregisterSystemLockReceiver()
-            awakeHost?.destroy()
-            floatingButtonHost?.destroy()
-            volumeKeyEventWindowHost?.destroy()
-            volumeKeyEventShizukuHost?.unregister()
-            screenEventHost?.unregister()
-
-            eventsProviderService?.let {
-                it.stop()
-                unbindEventsProviderService()
-            }
-
-            displayControlService?.let {
-                unbindDisplayControlService()
-            }
+            releaseRuntime()
 
             super.onDestroy()
             state.update { State.Destroyed }
         }
+    }
+
+    private fun releaseRuntime() {
+        settingsObserverJob?.cancel()
+        settingsObserverJob = null
+        runCatching { unregisterSystemLockReceiver() }
+        awakeHost?.destroy()
+        awakeHost = null
+        floatingButtonHost?.destroy()
+        floatingButtonHost = null
+        volumeKeyEventWindowHost?.destroy()
+        volumeKeyEventWindowHost = null
+        volumeKeyEventAccessibilityHost?.destroy()
+        volumeKeyEventAccessibilityHost = null
+        runCatching { volumeKeyEventShizukuHost?.unregister() }
+        volumeKeyEventShizukuHost = null
+        runCatching { screenEventHost?.unregister() }
+        screenEventHost = null
+
+        eventsProviderService?.let {
+            runCatching { it.stop() }
+            unbindEventsProviderService()
+        }
+        eventsProviderService = null
+
+        displayControlService?.let { unbindDisplayControlService() }
+        displayControlService = null
+    }
+
+    private fun enterForeground() {
+        val notification = notificationHost.notify(
+            isScreenOn,
+            floatingButtonHost?.isShowing ?: false,
+            feature.enabledFloatingButtonControl
+        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            // Fix the crash at android 15, java.lang.SecurityException: Starting FGS with type specialUse callerApp=ProcessRecord{7536cde 20348:own.moderpach.extinguish/u0a616} targetSDK=35 requires permissions: all of the permissions allOf=true [android.permission.FOREGROUND_SERVICE_SPECIAL_USE]
+            startForeground(NotificationHost.NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        } else {
+            startForeground(NotificationHost.NOTIFICATION_ID, notification)
+        }
+    }
+
+    private fun failInitialization(scene: ExceptionScenes, reason: String) {
+        Log.e(TAG, "initialize failed: $reason")
+        notifyException(scene, "Extinguish could not start: $reason")
+        state.update { State.Error }
+    }
+
+    private suspend fun waitUntil(timeoutMs: Long, condition: () -> Boolean): Boolean {
+        if (condition()) return true
+        return withTimeoutOrNull(timeoutMs) {
+            while (!condition()) delay(250)
+            true
+        } ?: false
     }
 
     //== Feature
@@ -556,7 +682,7 @@ class ExtinguishService : LifecycleService() {
     fun loadFeatureFromSettings(repository: ISettingsRepository, removeFloatingButton: Boolean) {
         feature = Feature(
             repository.solution,
-            repository.floatingButton.enabled && !removeFloatingButton,
+            repository.floatingButton.enabled && !removeFloatingButton && !removeFloatingButtonOverride,
             repository.floatingButton.hideWhenScreenOff,
             repository.volumeKeyEvent.enabled,
             repository.volumeKeyEvent.clickToTurnScreenOff,
@@ -565,6 +691,218 @@ class ExtinguishService : LifecycleService() {
             repository.screenEvent.enabled && repository.solution == SettingsTokens.SolutionValue.ShizukuScreenBrightnessNeg1,
             repository.compatibility.brightnessManualWhenScreenOff
         )
+    }
+
+    private var settingsObserverJob: Job? = null
+    private var removeFloatingButtonOverride: Boolean = false
+
+    private fun floatingButtonHostFeature() = FloatingButtonHost.Feature(
+        settingRepository.floatingButton.autoMoveToEdge,
+        settingRepository.floatingButton.fadeWhenUnused,
+        settingRepository.floatingButton.fadeTransparency,
+        settingRepository.floatingButton.blackStyle,
+        settingRepository.floatingButton.showTimerButton,
+        settingRepository.floatingButton.mergeTimerButton
+    )
+
+    private fun floatingButtonHostAction(action: FloatingButtonHost.Action) {
+        Log.d(TAG, "FloatingButtonHostAction: $action")
+        when (action) {
+            FloatingButtonHost.Action.TurnScreenOff -> lifecycleScope.launch(Dispatchers.Main) {
+                turnScreenOff()
+                updateHostState(false, feature)
+            }
+
+            is FloatingButtonHost.Action.TurnScreenOffWithTimer -> lifecycleScope.launch(Dispatchers.Main) {
+                turnScreenOff()
+                updateHostState(false, feature)
+                timer.launch(action.seconds) {
+                    updateHostState(true, feature)
+                    turnScreenOn()
+                }
+            }
+
+            FloatingButtonHost.Action.TurnScreenOn -> lifecycleScope.launch(Dispatchers.Main) {
+                turnScreenOn()
+                updateHostState(true, feature)
+            }
+        }
+    }
+
+    private fun volumeKeyEventAction() {
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (isScreenOn) {
+                updateHostState(false, feature)
+                turnScreenOff()
+            } else {
+                updateHostState(true, feature)
+                turnScreenOn()
+            }
+        }
+    }
+
+    private fun screenEventAction() {
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (!isScreenOn) {
+                updateHostState(true, feature)
+                turnScreenOn()
+            }
+        }
+    }
+
+    private fun destroyVolumeKeyHosts() {
+        volumeKeyEventWindowHost?.destroy()
+        volumeKeyEventWindowHost = null
+        volumeKeyEventAccessibilityHost?.destroy()
+        volumeKeyEventAccessibilityHost = null
+        volumeKeyEventShizukuHost?.unregister()
+        volumeKeyEventShizukuHost = null
+    }
+
+    private fun syncFloatingButtonHost() {
+        if (feature.enabledFloatingButtonControl) {
+            if (floatingButtonHost == null) {
+                floatingButtonHost = FloatingButtonHost(
+                    this@ExtinguishService,
+                    isScreenOn = isScreenOn,
+                    feature = floatingButtonHostFeature(),
+                    onAction = ::floatingButtonHostAction
+                )
+            } else {
+                floatingButtonHost?.updateFeature(floatingButtonHostFeature())
+                floatingButtonHost?.updateScreenState(isScreenOn)
+            }
+        } else {
+            floatingButtonHost?.destroy()
+            floatingButtonHost = null
+        }
+    }
+
+    private fun syncVolumeKeyHost() {
+        if (!feature.enabledVolumeKeyEventControl) {
+            destroyVolumeKeyHosts()
+            return
+        }
+
+        val shouldSleep = (isScreenOn && !feature.clickVolumeKeyToTurnScreenOff).or(
+            !isScreenOn && !feature.clickVolumeKeyToTurnScreenOn
+        )
+
+        when (feature.volumeKeyEventControlMethod) {
+            Shell -> {
+                volumeKeyEventWindowHost?.destroy()
+                volumeKeyEventWindowHost = null
+                volumeKeyEventAccessibilityHost?.destroy()
+                volumeKeyEventAccessibilityHost = null
+                eventsProviderService?.let { service ->
+                    if (volumeKeyEventShizukuHost == null) {
+                        volumeKeyEventShizukuHost = VolumeKeyEventShizukuHost(service, ::volumeKeyEventAction)
+                            .also { it.register() }
+                    }
+                    if (shouldSleep) volumeKeyEventShizukuHost?.sleep()
+                    else volumeKeyEventShizukuHost?.wake()
+                }
+            }
+
+            Window -> {
+                volumeKeyEventAccessibilityHost?.destroy()
+                volumeKeyEventAccessibilityHost = null
+                volumeKeyEventShizukuHost?.unregister()
+                volumeKeyEventShizukuHost = null
+                // the overlay window needs this permission even if the floating button is off
+                if (!systemPermissionsManager.checkSpecial(SpecificPermission.CanDrawOverlays)) {
+                    notifyException(
+                        ExceptionScenes.ExceptionWhenInvokeSystemFunction,
+                        "Missing overlay permission",
+                        "The 'Android Window' volume key method needs the 'draw over other apps' permission."
+                    )
+                    return
+                }
+                if (volumeKeyEventWindowHost == null) {
+                    volumeKeyEventWindowHost = VolumeKeyEventWindowHost(this@ExtinguishService, ::volumeKeyEventAction)
+                        .also { it.create() }
+                }
+                if (shouldSleep) volumeKeyEventWindowHost?.sleep()
+                else volumeKeyEventWindowHost?.wake()
+            }
+
+            Accessibility -> {
+                volumeKeyEventWindowHost?.destroy()
+                volumeKeyEventWindowHost = null
+                volumeKeyEventShizukuHost?.unregister()
+                volumeKeyEventShizukuHost = null
+                if (volumeKeyEventAccessibilityHost == null) {
+                    volumeKeyEventAccessibilityHost = VolumeKeyEventAccessibilityHost(::volumeKeyEventAction)
+                        .also { it.create() }
+                }
+                if (shouldSleep) volumeKeyEventAccessibilityHost?.sleep()
+                else volumeKeyEventAccessibilityHost?.wake()
+            }
+        }
+    }
+
+    private suspend fun syncEventsProviderService() {
+        if (needsEventsProviderService) {
+            if (eventsProviderService == null) {
+                bindEventsProviderService()
+                try {
+                    withTimeout(8000) {
+                        while (eventsProviderService == null) {
+                            delay(50)
+                        }
+                    }
+                } catch (e: Exception) {
+                    notifyException(ExceptionScenes.ExceptionWhenAccessShizukuRemote, e)
+                }
+            }
+        } else if (eventsProviderService != null) {
+            unbindEventsProviderService()
+        }
+    }
+
+    private fun syncScreenEventHost() {
+        if (!feature.enabledScreenEventControl || feature.solution != ShizukuScreenBrightnessNeg1) {
+            screenEventHost?.unregister()
+            screenEventHost = null
+            return
+        }
+
+        eventsProviderService?.let { service ->
+            if (screenEventHost == null) {
+                screenEventHost = ScreenEventHost(this@ExtinguishService, service, ::screenEventAction).also {
+                    it.register()
+                    if (isScreenOn) it.sleep()
+                }
+            } else {
+                if (isScreenOn) screenEventHost?.sleep() else screenEventHost?.wake()
+            }
+        }
+    }
+
+    /**
+     * Apply settings changes while the service is running, recreating only the affected hosts.
+     * */
+    private fun observeSettingsChanges() {
+        settingsObserverJob?.cancel()
+        settingsObserverJob = lifecycleScope.launch(Dispatchers.Main) {
+            settingsDataStore.data.drop(1).collectLatest {
+                val wasScreenOn = screenState.value == ScreenState.On
+                settingRepository.update()
+                loadFeatureFromSettings(settingRepository, false)
+
+                syncFloatingButtonHost()
+                syncEventsProviderService()
+                syncVolumeKeyHost()
+                syncScreenEventHost()
+
+                if (feature.enabledFloatingButtonControl) {
+                    floatingButtonHost?.updateFeature(floatingButtonHostFeature())
+                    floatingButtonHost?.updateScreenState(isScreenOn)
+                }
+
+                updateHostState(wasScreenOn, feature)
+            }
+        }
     }
 
     //== Bind with shizuku
@@ -599,7 +937,9 @@ class ExtinguishService : LifecycleService() {
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
+            Log.w(TAG, "DisplayControlService disconnected")
             displayControlService = null
+            scheduleShizukuReconnect()
         }
 
     }
@@ -654,7 +994,9 @@ class ExtinguishService : LifecycleService() {
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
+            Log.w(TAG, "EventsProviderService disconnected")
             eventsProviderService = null
+            scheduleShizukuReconnect()
         }
 
     }
@@ -682,6 +1024,113 @@ class ExtinguishService : LifecycleService() {
         }
     }
 
+    //== Shizuku reconnection
+    // user services die whenever the Shizuku server restarts
+
+    @Volatile
+    private var isDestroying = false
+    private val reconnectMutex = Mutex()
+    private var reconnectJob: Job? = null
+
+    private val shizukuBinderReceivedListener = Shizuku.OnBinderReceivedListener {
+        Log.d(TAG, "shizuku binder received")
+        if (state.value == State.Error && !isDestroying) {
+            Log.i(TAG, "retrying initialization now that shizuku is available")
+            initialize(removeFloatingButtonOverride)
+        } else {
+            scheduleShizukuReconnect()
+        }
+    }
+
+    private val needsEventsProviderService
+        get() = feature.enabledScreenEventControl.or(
+            feature.enabledVolumeKeyEventControl.and(
+                feature.volumeKeyEventControlMethod == Shell
+            )
+        )
+
+    private fun IInterface?.isAlive() =
+        this != null && runCatching { asBinder().pingBinder() }.getOrDefault(false)
+
+    private fun scheduleShizukuReconnect() {
+        if (isDestroying || state.value != State.Prepared) return
+        if (reconnectJob?.isActive == true) return
+        reconnectJob = lifecycleScope.launch(Dispatchers.Main) {
+            // shizuku itself may be going down, give it a moment
+            delay(500)
+            reconnectShizukuServices()
+        }
+    }
+
+    /**
+     * should be invoked in main thread.
+     * */
+    private suspend fun reconnectShizukuServices(): Boolean = reconnectMutex.withLock {
+        if (isDestroying) return@withLock false
+        if (!runCatching { Shizuku.pingBinder() }.getOrDefault(false)) {
+            Log.w(TAG, "reconnect: shizuku binder not available yet")
+            return@withLock false
+        }
+
+        val needEvents = needsEventsProviderService
+        val displayAlive = displayControlService.isAlive()
+        val eventsAlive = eventsProviderService.isAlive()
+        if (displayAlive && (!needEvents || eventsAlive)) return@withLock true
+
+        Log.w(TAG, "reconnect: displayAlive=$displayAlive eventsAlive=$eventsAlive needEvents=$needEvents")
+
+        if (!displayAlive) {
+            displayControlService = null
+            bindDisplayControlService()
+        }
+        val rebindEvents = needEvents && !eventsAlive
+        if (rebindEvents) {
+            runCatching { volumeKeyEventShizukuHost?.unregister() }
+            volumeKeyEventShizukuHost = null
+            runCatching { screenEventHost?.unregister() }
+            screenEventHost = null
+            eventsProviderService = null
+            bindEventsProviderService()
+        }
+
+        val connected = withTimeoutOrNull(8000) {
+            while (displayControlService == null || (needEvents && eventsProviderService == null)) {
+                delay(50)
+            }
+            true
+        } ?: false
+
+        if (!connected) {
+            notifyException(
+                ExceptionScenes.ExceptionWhenAccessShizukuRemote,
+                "reconnecting shizuku remote service timeout"
+            )
+            return@withLock displayControlService.isAlive()
+        }
+
+        if (rebindEvents) {
+            syncVolumeKeyHost()
+            syncScreenEventHost()
+            try {
+                eventsProviderService?.launch(GETEVENT_ARGS)
+            } catch (e: Exception) {
+                notifyException(ExceptionScenes.ExceptionWhenAccessShizukuRemote, e)
+            }
+        }
+        Log.i(TAG, "reconnect: shizuku user services restored")
+        true
+    }
+
+    private suspend fun ensureDisplayControlService() {
+        if (isDestroying || displayControlService.isAlive()) return
+        if (!reconnectShizukuServices()) {
+            notifyException(
+                ExceptionScenes.ExceptionWhenAccessShizukuRemote,
+                "Shizuku service unavailable - is Shizuku running?"
+            )
+        }
+    }
+
     //== Screen state
     private val screenControlMutex = Mutex()
     val isScreenOn get() = screenState.value == ScreenState.On
@@ -693,6 +1142,7 @@ class ExtinguishService : LifecycleService() {
     }
 
     suspend fun turnScreenOn() {
+        ensureDisplayControlService()
         screenControlMutex.withLock {
             screenState.update { ScreenState.On }
             try {
@@ -745,6 +1195,7 @@ class ExtinguishService : LifecycleService() {
     }
 
     suspend fun turnScreenOff() {
+        ensureDisplayControlService()
         screenControlMutex.withLock {
             screenState.update { ScreenState.Off }
             recordBrightness = try {
@@ -812,6 +1263,8 @@ class ExtinguishService : LifecycleService() {
     private fun registerSystemLockReceiver() {
         systemLockReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
+                // only restore if Extinguish turned the screen off, not on every lock/timeout
+                if (screenState.value != ScreenState.Off) return
                 lifecycleScope.launch(Dispatchers.Main) {
                     screenControlMutex.withLock {
                         displayControlService?.setBrightnessToSetting(recordBrightness)

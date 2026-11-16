@@ -1,6 +1,5 @@
 package own.moderpach.extinguish.service.hosts
 
-import android.content.Context
 import android.util.Log
 import extinguish.ipc.result.EventResult
 import extinguish.shizuku_service.IEventsListener
@@ -8,8 +7,11 @@ import extinguish.shizuku_service.IEventsProvider
 
 private const val TAG = "VolumeKeyEventShizukuHost"
 
+/**
+ * `getevent` can only observe key events, not consume them, so this method only triggers the
+ * screen action and doesn't touch the volume.
+ */
 class VolumeKeyEventShizukuHost(
-    private val owner: Context,
     val service: IEventsProvider,
     var onKeyEvent: () -> Unit = {},
 ) {

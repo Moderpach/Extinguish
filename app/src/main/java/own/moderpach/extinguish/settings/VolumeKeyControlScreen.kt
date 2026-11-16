@@ -1,5 +1,6 @@
 package own.moderpach.extinguish.settings
 
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,25 +8,39 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavGraphBuilder
 import own.moderpach.extinguish.ExtinguishNavGraph
 import own.moderpach.extinguish.ExtinguishNavRoute
+import own.moderpach.extinguish.LocalSystemPermissionsManager
 import own.moderpach.extinguish.R
+import own.moderpach.extinguish.SpecificPermission
 import own.moderpach.extinguish.settings.components.EnablerCard
 import own.moderpach.extinguish.settings.components.RadioCard
 import own.moderpach.extinguish.settings.components.SettingCard
@@ -35,6 +50,7 @@ import own.moderpach.extinguish.settings.components.SettingListItemWithSwitch
 import own.moderpach.extinguish.settings.data.ISettingsRepository
 import own.moderpach.extinguish.settings.data.SettingsTokens
 import own.moderpach.extinguish.settings.test.FakeSettingsRepository
+import own.moderpach.extinguish.test.FakeSystemPermissionsManager
 import own.moderpach.extinguish.ui.components.ExtinguishTopAppBarWithNavigationBack
 import own.moderpach.extinguish.ui.navigation.extinguishComposable
 import own.moderpach.extinguish.ui.theme.ExtinguishTheme
@@ -63,6 +79,28 @@ fun VolumeKeyControlScreen(
     onNavigateTo: (ExtinguishNavRoute) -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    val systemPermissionsManager = LocalSystemPermissionsManager.current
+    var isAccessibilityServiceEnabled by remember {
+        mutableStateOf(systemPermissionsManager.checkSpecial(SpecificPermission.AccessibilityServiceEnabled))
+    }
+    var isOverlayPermissionGranted by remember {
+        mutableStateOf(systemPermissionsManager.checkSpecial(SpecificPermission.CanDrawOverlays))
+    }
+    // these can only change in system settings, so re-check when coming back
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                isAccessibilityServiceEnabled =
+                    systemPermissionsManager.checkSpecial(SpecificPermission.AccessibilityServiceEnabled)
+                isOverlayPermissionGranted =
+                    systemPermissionsManager.checkSpecial(SpecificPermission.CanDrawOverlays)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -137,6 +175,63 @@ fun VolumeKeyControlScreen(
                             headline = stringResource(R.string.str_android_window),
                             supporting = stringResource(R.string.str_android_window_supporting)
                         )
+                        if (
+                            settingsRepository.volumeKeyEvent.listeningMethod == SettingsTokens.VolumeKeyEvent.ListeningMethodValue.Window &&
+                            !isOverlayPermissionGranted
+                        ) {
+                            SettingCard {
+                                SettingListItem(
+                                    headline = stringResource(R.string.str_overlayPermissionNotGranted),
+                                    supporting = stringResource(R.string.str_overlayPermissionNotGranted_supporting)
+                                )
+                                Button(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp)
+                                        .padding(bottom = 16.dp),
+                                    onClick = {
+                                        systemPermissionsManager.requestSpecial(SpecificPermission.CanDrawOverlays)
+                                    }
+                                ) {
+                                    Text(stringResource(R.string.Open_overlay_settings))
+                                }
+                            }
+                        }
+                        // FLAG_REQUEST_FILTER_KEY_EVENTS requires API 33
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            RadioCard(
+                                modifier = Modifier.selectableGroup(),
+                                selected = settingsRepository.volumeKeyEvent.listeningMethod == SettingsTokens.VolumeKeyEvent.ListeningMethodValue.Accessibility,
+                                onClick = {
+                                    settingsRepository.volumeKeyEvent.listeningMethod =
+                                        SettingsTokens.VolumeKeyEvent.ListeningMethodValue.Accessibility
+                                },
+                                headline = stringResource(R.string.str_accessibility),
+                                supporting = stringResource(R.string.str_accessibility_supporting)
+                            )
+                            if (
+                                settingsRepository.volumeKeyEvent.listeningMethod == SettingsTokens.VolumeKeyEvent.ListeningMethodValue.Accessibility &&
+                                !isAccessibilityServiceEnabled
+                            ) {
+                                SettingCard {
+                                    SettingListItem(
+                                        headline = stringResource(R.string.str_accessibilityServiceNotEnabled),
+                                        supporting = stringResource(R.string.str_accessibilityServiceNotEnabled_supporting)
+                                    )
+                                    Button(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp)
+                                            .padding(bottom = 16.dp),
+                                        onClick = {
+                                            systemPermissionsManager.requestSpecial(SpecificPermission.AccessibilityServiceEnabled)
+                                        }
+                                    ) {
+                                        Text(stringResource(R.string.Open_accessibility_settings))
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -148,10 +243,14 @@ fun VolumeKeyControlScreen(
 @Preview
 @Composable
 private fun VolumeKeyControlScreenPreview() = ExtinguishTheme {
-    Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
-        VolumeKeyControlScreen(
-            onBack = {},
-            settingsRepository = FakeSettingsRepository()
-        ) { }
+    CompositionLocalProvider(
+        LocalSystemPermissionsManager provides FakeSystemPermissionsManager()
+    ) {
+        Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
+            VolumeKeyControlScreen(
+                onBack = {},
+                settingsRepository = FakeSettingsRepository()
+            ) { }
+        }
     }
 }

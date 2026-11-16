@@ -7,6 +7,7 @@ class ExtinguishApplication : Application() {
         super.onCreate()
 
         createNotificationChannels()
+        CrashReporter.install(this)
     }
 }
 

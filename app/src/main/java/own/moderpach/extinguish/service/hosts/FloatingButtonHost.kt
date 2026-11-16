@@ -39,6 +39,7 @@ class FloatingButtonHost<T>(
         val fadeWhenUnused: Boolean = SettingsTokens.FloatingButton.FadeWhenUnused.default,
         val fadeTransparency: Float = SettingsTokens.FloatingButton.FadeTransparency.default,
         val blackStyle: Boolean = SettingsTokens.FloatingButton.BlackStyle.default,
+        val showTimerButton: Boolean = SettingsTokens.FloatingButton.ShowTimerButton.default,
         val mergeTimerButton: Boolean = SettingsTokens.FloatingButton.MergeTimerButton.default,
     )
 
@@ -78,6 +79,7 @@ class FloatingButtonHost<T>(
                     feature.fadeWhenUnused,
                     feature.fadeTransparency,
                     feature.blackStyle,
+                    feature.showTimerButton,
                     feature.mergeTimerButton
                 )
             )
@@ -92,7 +94,8 @@ class FloatingButtonHost<T>(
         floatingButtonWindow?.let {
             val updatingFeature = with(feature) {
                 FloatingButtonWindow.Feature(
-                    autoMoveToEdge, fadeWhenUnused, fadeTransparency, blackStyle, mergeTimerButton
+                    autoMoveToEdge, fadeWhenUnused, fadeTransparency, blackStyle,
+                    showTimerButton, mergeTimerButton
                 )
             }
             it.updateFeature(updatingFeature)

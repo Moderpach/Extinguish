@@ -110,4 +110,8 @@
     <string name="str_SystemUnsupportedBrightnessSettings_description">如果您的设备实际支持亮度和自动亮度设置，尝试切换它们可能可以解决问题。</string>
     <string name="str_browser_not_found">浏览器未安装或启用</string>
     <string name="str_shizuku_not_found">Shizuku 未安装或启用</string>
+    <string name="str_crash_title">Extinguish 已崩溃</string>
+    <string name="str_crash_text">服务已停止：%1$s。点按打开 Extinguish 并重新启动。</string>
+    <string name="str_killed_title">Extinguish 已被停止</string>
+    <string name="str_killed_text">系统于 %1$s 停止了应用（%2$s）。点按打开 Extinguish 并重新启动。</string>
 </resources>

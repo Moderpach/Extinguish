@@ -164,6 +164,7 @@ class FloatingButtonWindow(
         val fadeWhenUnused: Boolean = SettingsTokens.FloatingButton.FadeWhenUnused.default,
         val fadeTransparency: Float = SettingsTokens.FloatingButton.FadeTransparency.default,
         val blackStyle: Boolean = SettingsTokens.FloatingButton.BlackStyle.default,
+        val showTimerButton: Boolean = SettingsTokens.FloatingButton.ShowTimerButton.default,
         val mergeTimerButton: Boolean = SettingsTokens.FloatingButton.MergeTimerButton.default,
     )
 
@@ -415,7 +416,7 @@ class FloatingButtonWindow(
             Layout(
                 modifier = Modifier.padding(InnerPadding),
                 content = {
-                    val onMainButtonLongClick = if (feature.mergeTimerButton) {
+                    val onMainButtonLongClick = if (feature.showTimerButton && feature.mergeTimerButton) {
                         {
                             fadeWhenUnusedTimer.resetAndLaunch()
                             onAction.invoke(Action.ShowTimerSetterDialog)
@@ -451,7 +452,7 @@ class FloatingButtonWindow(
                         onLongClick = onMainButtonLongClick
                     )
                     AnimatedVisibility(
-                        !feature.mergeTimerButton && isScreenOn,
+                        feature.showTimerButton && !feature.mergeTimerButton && isScreenOn,
                         enter = fadeIn(spring(stiffness = Spring.StiffnessMediumLow)),
                         exit = fadeOut(spring(stiffness = Spring.StiffnessMedium)),
                         modifier = Modifier.clipToBounds()

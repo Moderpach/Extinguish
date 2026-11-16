@@ -129,6 +129,7 @@ fun FloatingButtonScreen(
                         headline = stringResource(R.string.str_mergeTimerButton),
                         supporting = stringResource(R.string.str_mergeTimerButton_supporting),
                         checked = settingsRepository.floatingButton.mergeTimerButton,
+                        enabled = settingsRepository.floatingButton.showTimerButton,
                         onCheckedChange = {
                             settingsRepository.floatingButton.mergeTimerButton = it
                         }
