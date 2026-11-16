@@ -123,5 +123,9 @@
     <string name="str_SystemUnsupportedBrightnessSettings_description">If your device actually support setting brightness or brightness mode, you can try to switch these settings may solve the problem.</string>
     <string name="str_browser_not_found">Browser is not installed or enabled</string>
     <string name="str_shizuku_not_found">Shizuku is not installed or enabled</string>
+    <string name="str_crash_title">Extinguish crashed</string>
+    <string name="str_crash_text">The service stopped: %1$s. Tap to open Extinguish and start it again.</string>
+    <string name="str_killed_title">Extinguish was stopped</string>
+    <string name="str_killed_text">Android stopped the app at %1$s (%2$s). Tap to open Extinguish and start it again.</string>
 
 </resources>
